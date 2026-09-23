@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b4ea2">
+  <meta name="description" content="Xovos tumani 30-maktab — zamonaviy maktab axborot portali.">
+  <title>30-Maktab | Xovos tumani</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- =========================================================
+       30-MAKTAB — NURAS BRANCH
+       O'ZGARTIRISH UCHUN ASOSIY JOYLAR:
+       1) O'qituvchilar: #teachersData emas, HTML ichidagi .teacher-card nusxasini ko'paytiring.
+       2) O'quvchilar: .student-card nusxasini ko'paytiring.
+       3) Maktab haqida: .about-card nusxasini ko'paytiring.
+       4) Audio: <audio> teglarida o'zingizning faylingizni ko'rsating.
+       5) Ijtimoiy tarmoqlar: footer ichidagi 3 ta href ni almashtiring.
+       6) AI: script.js boshidagi AI_CONFIG ni sozlang.
+       ========================================================= -->
+
+  <div id="scrollProgress"></div>
+
+  <header class="site-header" id="top">
+    <div class="nav-wrap">
+      <a class="brand" href="#home" aria-label="30-maktab bosh sahifa">
+        <span class="brand-mark">30</span>
+        <span>
+          <b>30-MAKTAB</b>
+          <small>Xovos tumani · Sirdaryo viloyati</small>
+        </span>
+      </a>
+
+      <div class="header-controls">
+        <button class="mode-toggle" id="modeToggle" aria-label="Tungi rejimni yoqish" title="Tungi rejim">☾</button>
+        <button class="menu-toggle" id="menuToggle" aria-label="Menyuni ochish">☰</button>
+      </div>
+
+      <nav class="main-nav" id="mainNav">
+        <a href="#home" data-section="home">Bosh sahifa</a>
+        <a href="#teachers" data-section="teachers">O‘qituvchilar</a>
+        <a href="#students" data-section="students">Yutuqli o‘quvchilar</a>
+        <a href="#bell" data-section="bell">Maktab qo‘ng‘irog‘i</a>
+        <a href="#about" data-section="about">Maktab haqida</a>
+        <a href="#ai" data-section="ai">AI yordamchi</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero section" id="home">
+      <div class="hero-bg"></div>
+      <div class="container hero-grid">
+        <div class="hero-copy reveal">
+          <span class="eyebrow">NURAS · TA’LIM PLATFORMASI</span>
+          <h1>Bilimdan kelajak sari.</h1>
+          <p>
+            Xovos tumani 30-maktabning zamonaviy raqamli sahifasiga xush kelibsiz.
+            Maktab hayoti, ustozlar, o‘quvchilar yutuqlari va qo‘ng‘iroq jadvali — barchasi bir joyda.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#bell">⏱ Qo‘ng‘iroq jadvali</a>
+            <a class="btn btn-ghost" href="#about">Maktab haqida →</a>
+          </div>
+          <div class="mini-stats">
+            <div><strong>30</strong><span>Maktab</span></div>
+            <div><strong>2</strong><span>Smena</span></div>
+            <div><strong>45</strong><span>Daqiqa dars</span></div>
+          </div>
+        </div>
+
+        <div class="hero-gallery reveal">
+          <div class="hero-photo hero-photo-main">
+            <img src="assets/maktab-old-korinishi.jpg" alt="30-maktab binosi">
+            <span class="photo-label">30-MAKTAB</span>
+          </div>
+          <div class="hero-photo hero-photo-small">
+            <img src="assets/maktab-darvoza.jpg" alt="30-maktab darvozasi">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUICK INFO -->
+    <section class="quick section-sm">
+      <div class="container quick-grid">
+        <div class="quick-card"><span>📍</span><div><b>Manzil</b><small>Xovos tumani, Sirdaryo viloyati</small></div></div>
+        <div class="quick-card"><span>🕘</span><div><b>Ta’lim vaqti</b><small>08:00 — 17:55</small></div></div>
+        <div class="quick-card"><span>📚</span><div><b>Dars davomiyligi</b><small>45 daqiqa</small></div></div>
+        <div class="quick-card"><span>🇺🇿</span><div><b>Shior</b><small>Bilim · Tarbiya · Kelajak</small></div></div>
+      </div>
+    </section>
+
+    <!-- TEACHERS -->
+    <section class="section" id="teachers">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <span class="eyebrow">USTOZLAR JAMOASI</span>
+            <h2>O‘qituvchilar</h2>
+          </div>
+          <p>Har bir ustoz — o‘quvchi kelajagiga qo‘yilgan mustahkam poydevor.</p>
+        </div>
+
+        <div class="cards-grid">
+          <!-- ================= O'QITUVCHI CARD SHABLONI =================
+               SHU BLOKNI TO'LIQ NUSXA QILIB PASTIGA QO'YING.
+               RASM: assets/teacher-ismi.jpg faylini qo'ying va src ni almashtiring.
+               ================================================================= -->
+          <article class="person-card teacher-card reveal">
+            <div class="person-image">
+              <!-- RASMNI SHU YERGA QO'YING: <img src="assets/direktor.jpg" alt="Direktor"> -->
+              <div class="image-placeholder">DIREKTOR<br><small>Rasm joyi</small></div>
+              <span class="role-badge">DIREKTOR</span>
+            </div>
+            <div class="person-body">
+              <span class="card-kicker">Maktab rahbari</span>
+              <h3>Direktor ismi Familiyasi</h3>
+              <p class="subject">🎓 Maktab direktori</p>
+              <div class="person-meta"><span>⏳ 15+ yil</span><span>🏫 30-maktab</span></div>
+              <p>Bu yerga direktor haqida 2–3 jumla qisqa ma’lumot yozing.</p>
+            </div>
+          </article>
+
+          <!-- O'QITUVCHI UCHUN NAMUNA CARD — NUSXA QILING -->
+          <article class="person-card teacher-card reveal">
+            <div class="person-image">
+              <!-- RASMNI SHU YERGA QO'YING: <img src="assets/oqituvchi-1.jpg" alt="O'qituvchi"> -->
+              <div class="image-placeholder">O‘QITUVCHI<br><small>Rasm joyi</small></div>
+              <span class="role-badge">USTOZ</span>
+            </div>
+            <div class="person-body">
+              <span class="card-kicker">Fan o‘qituvchisi</span>
+              <h3>O‘qituvchi ismi Familiyasi</h3>
+              <p class="subject">📘 Matematika fani</p>
+              <div class="person-meta"><span>⏳ 10 yil</span><span>🏫 30-maktab</span></div>
+              <p>Bu yerga ustozning qisqa tarjimai holi yoki yutuqlarini yozing.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- STUDENTS -->
+    <section class="section section-alt" id="students">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <span class="eyebrow">YOSH IQTIDORLAR</span>
+            <h2>Yutuqli o‘quvchilar</h2>
+          </div>
+          <p>Fan olimpiadalari, tanlovlar, sport va boshqa yo‘nalishlardagi natijalar.</p>
+        </div>
+
+        <div class="cards-grid">
+          <!-- ================= O'QUVCHI CARD SHABLONI =================
+               SHU BLOKNI NUSXA QILIB, ISM/RASM/SINF/YUTUQNI O'ZGARTIRING.
+               RASM: assets/oquvchi-1.jpg
+               ================================================================= -->
+          <article class="person-card student-card reveal">
+            <div class="person-image student-image">
+              <!-- RASMNI SHU YERGA QO'YING: <img src="assets/oquvchi-1.jpg" alt="O'quvchi"> -->
+              <div class="image-placeholder">O‘QUVCHI<br><small>Rasm joyi</small></div>
+              <span class="role-badge award">🏆 YUTUQ</span>
+            </div>
+            <div class="person-body">
+              <span class="card-kicker">Yosh iqtidor</span>
+              <h3>O‘quvchi ismi Familiyasi</h3>
+              <p class="subject">🏅 Matematika olimpiadasi</p>
+              <div class="person-meta"><span>📚 9-sinf</span><span>🥇 1-o‘rin</span></div>
+              <p>Bu yerga o‘quvchining yutug‘i, tanlov nomi va natijasini yozing.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- BELL -->
+    <section class="section" id="bell">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <span class="eyebrow">SMART BELL</span>
+            <h2>Maktab qo‘ng‘irog‘i</h2>
+          </div>
+          <p>Jonli vaqt, dars holati va avtomatik audio signal.</p>
+        </div>
+
+        <div class="bell-layout">
+          <div class="clock-panel glass reveal">
+            <div class="live-dot"><i></i> LIVE</div>
+            <div class="digital-clock" id="digitalClock">00:00:00</div>
+            <div class="date-now" id="dateNow">—</div>
+            <div class="current-status" id="currentStatus">Jadval yuklanmoqda...</div>
+            <div class="next-bell">
+              <span>Keyingi signal</span>
+              <strong id="nextBell">—</strong>
+              <small id="countdown">—</small>
+            </div>
+          </div>
+
+          <div class="schedule-panel reveal">
+            <div class="schedule-top">
+              <h3>Bugungi dars jadvali</h3>
+              <span id="scheduleShift">2 smena jadvali</span>
+            </div>
+            <div class="schedule-list" id="scheduleList"></div>
+          </div>
+        </div>
+
+        <div class="audio-settings reveal">
+          <div class="audio-box">
+            <span class="audio-icon">🔔</span>
+            <div>
+              <b>Dars boshlanishi / qo‘ng‘iroq</b>
+              <small>O‘zingizning audio faylingizni shu teg ichida belgilang.</small>
+            </div>
+            <!-- AUDIO 1: src="assets/qongiroq.mp3" qilib o'zgartiring -->
+            <audio id="bellAudio" controls preload="auto">
+              <!-- <source src="assets/qongiroq.mp3" type="audio/mpeg"> -->
+            </audio>
+          </div>
+
+          <div class="audio-box">
+            <span class="audio-icon">🎵</span>
+            <div>
+              <b>8:02 maxsus musiqa</b>
+            </div>
+            <!-- AUDIO 2: src="assets/ertalabki-musiqa.mp3" qilib o'zgartiring -->
+            <audio id="morningAudio" controls preload="auto">
+               <source src="ozbekiston-respublikasi-davlat-madhiyasi-madhiya (2).mp3" type="audio/mpeg">
+            </audio>
+          </div>
+
+          <div class="audio-box">
+            <span class="audio-icon">🚪</span>
+            <div>
+              <b>Kirish / chiqish signali</b>
+              <small>Tanaffus tugashi va boshlanishida ishlatiladigan audio.</small>
+            </div>
+            <!-- AUDIO 3: src="assets/tanaffus.mp3" qilib o'zgartiring -->
+            <audio id="breakAudio" controls preload="auto">
+              <!-- <source src="assets/tanaffus.mp3" type="audio/mpeg"> -->
+            </audio>
+          </div>
+        </div>
+
+        <div class="audio-note">
+          ⚠️ Brauzerlar xavfsizlik sababli ovozni foydalanuvchi sahifaga kirishidan oldin avtomatik ijro etishni bloklashi mumkin.
+          “Ovozlarni yoqish” tugmasini bir marta bosing — shundan keyin jadval avtomatik ishlaydi.
+          <button id="enableAudio" class="btn btn-primary btn-small">🔊 Ovozlarni yoqish</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="section section-alt" id="about">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <span class="eyebrow">BIZ HAQIMIZDA</span>
+            <h2>30-maktab haqida</h2>
+          </div>
+          <p>Maktab tarixini, missiyasini va faoliyatini shu yerda tanishtiring.</p>
+        </div>
+
+        <div class="about-grid">
+          <!-- ================= MAKTAB HAQIDA CARD SHABLONI ================= -->
+          <article class="about-card reveal">
+            <div class="about-image">
+              <img src="assets/maktab-old-korinishi.jpg" alt="Maktab binosi">
+            </div>
+            <div class="about-content">
+              <span class="card-kicker">Maktabimiz</span>
+              <h3>Bilim va tarbiya maskani</h3>
+              <p>
+                Bu yerga maktabning to‘liq tarixi, tashkil topgan yili, yo‘nalishlari,
+                qadriyatlari, o‘qituvchilar jamoasi va boshqa kerakli ma’lumotlarni yozing.
+              </p>
+              <ul class="check-list">
+                <li>📚 Zamonaviy ta’lim muhiti</li>
+                <li>🧠 Iqtidorli o‘quvchilar bilan ishlash</li>
+                <li>🤝 Ustoz–o‘quvchi hamkorligi</li>
+              </ul>
+            </div>
+          </article>
+
+          <!-- BU CARDNI NUSXA QILIB YANA MA'LUMOT QO'SHING -->
+          <article class="about-card reveal">
+            <div class="about-image">
+              <img src="assets/maktab-darvoza.jpg" alt="30-maktab darvozasi">
+            </div>
+            <div class="about-content">
+              <span class="card-kicker">Maqsadimiz</span>
+              <h3>Kelajak uchun tayyorgarlik</h3>
+              <p>
+                Bu joyga maktabning maqsadi, yutuqlari, to‘garaklari, tadbirlari yoki
+                boshqa foydali ma’lumotlarni yozishingiz mumkin.
+              </p>
+              <div class="quote">“Ta’lim — kelajakni bunyod etadigan eng kuchli vosita.”</div>
+            </div>
+          </article>
+        </div>
+
+        <!-- MAP -->
+        <div class="map-card reveal">
+          <div class="map-heading">
+            <div>
+              <span class="eyebrow">MANZIL</span>
+              <h3>30-maktab xaritada</h3>
+              <p>Xovos tumani, Sirdaryo viloyati · taxminiy koordinata: 40.23295, 68.83591</p>
+            </div>
+            <a class="btn btn-ghost btn-small" href="https://www.openstreetmap.org/?mlat=40.23295&mlon=68.83591#map=17/40.23295/68.83591" target="_blank" rel="noopener">Xaritani ochish ↗</a>
+          </div>
+          <iframe
+            title="Xovos tumani 30-maktab xaritasi"
+            src="https://www.openstreetmap.org/export/embed.html?bbox=68.825%2C40.228%2C68.845%2C40.238&layer=mapnik&marker=40.23295%2C68.83591"
+            loading="lazy">
+          </iframe>
+        </div>
+      </div>
+    </section>
+
+    <!-- AI -->
+    <section class="section" id="ai">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <span class="eyebrow">NURAS AI</span>
+            <h2>Sun’iy intellekt yordamchi</h2>
+          </div>
+          <p>Maktab ma’lumotlari va umumiy bilimlar bo‘yicha savol-javob oynasi.</p>
+        </div>
+
+        <div class="ai-shell reveal">
+          <aside class="ai-sidebar">
+            <div class="ai-brand"><span>✦</span><div><b>NURAS AI</b><small>30-Maktab yordamchisi</small></div></div>
+            <div class="ai-info">
+              <b>O‘zingiz sozlang</b>
+              <p>script.js ichidagi <code>SCHOOL_KNOWLEDGE</code> bo‘limiga maktab haqidagi ma’lumotlarni qo‘shing.</p>
+            </div>
+            <div class="ai-status"><i></i><span id="aiModeText">Mahalliy bilim rejimi</span></div>
+          </aside>
+
+          <div class="chat">
+            <div class="chat-messages" id="chatMessages">
+              <div class="message bot">
+                <div class="avatar">✦</div>
+                <div class="bubble">
+                  Assalomu alaykum! Men <b>NURAS AI</b>. Maktab haqida siz kiritgan ma’lumotlar bo‘yicha va umumiy savollarga javob berishga yordam beraman.
+                  <div class="suggestions">
+                    <button data-question="30-maktab qayerda joylashgan?">Maktab qayerda?</button>
+                    <button data-question="Darslar necha daqiqa?">Dars davomiyligi?</button>
+                    <button data-question="O‘zbekiston poytaxti qayer?">Umumiy savol</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <form class="chat-input" id="chatForm">
+              <input id="chatInput" type="text" placeholder="Savolingizni yozing..." autocomplete="off">
+              <button type="submit">Yuborish ➤</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RATING -->
+    <section class="section rating-section" id="rating">
+      <div class="container">
+        <div class="rating-card reveal">
+          <div>
+            <span class="eyebrow">FIKR-MULOHAZA</span>
+            <h2>Saytni baholang</h2>
+            <p>Yulduzcha tanlang va fikringizni yozing.</p>
+          </div>
+
+          <form id="reviewForm" class="review-form">
+            <div class="stars" id="starPicker" aria-label="5 yulduzli baholash">
+              <button type="button" data-star="1">★</button>
+              <button type="button" data-star="2">★</button>
+              <button type="button" data-star="3">★</button>
+              <button type="button" data-star="4">★</button>
+              <button type="button" data-star="5">★</button>
+            </div>
+            <input id="reviewName" required maxlength="40" placeholder="Ismingiz">
+            <textarea id="reviewText" required maxlength="300" rows="3" placeholder="Fikringiz..."></textarea>
+            <button class="btn btn-primary" type="submit">⭐ Bahoni yuborish</button>
+          </form>
+        </div>
+
+        <div class="reviews-head">
+          <h3>Foydalanuvchilar fikrlari</h3>
+          <span id="reviewAverage">Hali baho yo‘q</span>
+        </div>
+        <div class="reviews-list" id="reviewsList"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <div class="brand footer-brand"><span class="brand-mark">30</span><span><b>30-MAKTAB</b><small>Xovos tumani · Sirdaryo</small></span></div>
+        <p>Ta’lim, tarbiya va kelajak sari birgalikda.</p>
+        <small class="made-by">NURAS brendi tomonidan tayyorlangan</small>
+      </div>
+
+      <div>
+        <h4>Tezkor menyu</h4>
+        <a href="#home" data-section="home">Bosh sahifa</a>
+        <a href="#teachers" data-section="teachers">O‘qituvchilar</a>
+        <a href="#students">O‘quvchilar</a>
+        <a href="#bell">Qo‘ng‘iroq</a>
+      </div>
+
+      <div>
+        <h4>Ijtimoiy tarmoqlar</h4>
+        <!-- ====== 3 TA IJTIMOIY TARMOQ LINKI ======
+             Quyidagi href qiymatlarini o'zingiznikiga almashtiring.
+             1) Telegram
+             2) Instagram
+             3) YouTube
+             =================================================== -->
+        <a href="https://t.me/maktab_30Xovos" target="_blank" rel="noopener">✈ Telegram</a>
+        <a href="https://instagram.com/" target="_blank" rel="noopener">◎ Instagram</a>
+        <a href="https://youtube.com/" target="_blank" rel="noopener">▶ YouTube</a>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="container footer-bottom-inner">
+        <span>© 2026 30-Maktab · NURAS</span>
+        <span>Sayt egasi: <b>Nurullayeva Nurangiz</b> · <b>Nurullayev Nurmuhamamd</b> · <b>Ahmadjonov Asrorbek</b></span>
+      </div>
+    </div>
+  </footer>
+
+  <button id="toTop" class="to-top" aria-label="Tepaga chiqish">↑</button>
+  <div id="toast" class="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
