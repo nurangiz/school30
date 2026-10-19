@@ -33,6 +33,9 @@
       </a>
 
       <div class="header-controls">
+        <a href="https://t.me/Maktab30Xovos_bot" target="_blank" rel="noopener" class="tg-header-btn" title="Telegram Bot: @Maktab30Xovos_bot">
+          ✈ @Maktab30Xovos_bot
+        </a>
         <button class="mode-toggle" id="modeToggle" aria-label="Tungi rejimni yoqish" title="Tungi rejim">☾</button>
         <button class="menu-toggle" id="menuToggle" aria-label="Menyuni ochish">☰</button>
       </div>
@@ -104,7 +107,34 @@
           <p>Har bir ustoz — o‘quvchi kelajagiga qo‘yilgan mustahkam poydevor.</p>
         </div>
 
-        <div class="cards-grid">
+        <!-- O'QITUVCHILAR BO'LIMLARI / FANLAR BO'YICHA FILTR -->
+        <div class="teacher-filter-bar reveal">
+          <div class="teacher-search-box">
+            <span class="search-icon">🔎</span>
+            <input type="text" id="teacherSearchInput" placeholder="O‘qituvchini ismi yoki fani bo‘yicha qidirish (masalan: Tarix, Matematika, To‘lqin, Hamid)...">
+            <button type="button" id="clearTeacherSearch" style="display:none;" title="Tozalash">✕</button>
+          </div>
+
+          <div class="teacher-category-chips" id="teacherCategoryChips">
+            <button type="button" class="t-chip active" data-category="all">🌟 Barcha o‘qituvchilar (38)</button>
+            <button type="button" class="t-chip" data-category="tarix">📜 Tarix fani</button>
+            <button type="button" class="t-chip" data-category="matematika">📐 Matematika & IT</button>
+            <button type="button" class="t-chip" data-category="fizika">⚡ Fizika & Kimyo</button>
+            <button type="button" class="t-chip" data-category="ona-tili">📖 Ona tili & Adabiyot</button>
+            <button type="button" class="t-chip" data-category="chet-tili">🇬🇧 Chet tillari (Ingliz, Rus)</button>
+            <button type="button" class="t-chip" data-category="boshlangich">🎒 Boshlang‘ich sinf</button>
+            <button type="button" class="t-chip" data-category="sport">🏃‍♂️ Jismoniy tarbiya & ChQBT</button>
+            <button type="button" class="t-chip" data-category="geografiya">🌍 Geografiya</button>
+            <button type="button" class="t-chip" data-category="rahbariyat">🎓 Rahbariyat</button>
+          </div>
+
+          <div class="teacher-filter-meta">
+            <span id="teacherFilterCounter">Ko‘rsatilmoqda: <b>38</b> nafar ustoz</span>
+            <span id="activeFilterBadge" class="active-filter-badge">Barcha fanlar</span>
+          </div>
+        </div>
+
+        <div class="cards-grid" id="teachersGrid">
           <!-- ================= O'QITUVCHI CARD SHABLONI =================
                SHU BLOKNI TO'LIQ NUSXA QILIB PASTIGA QO'YING.
                RASM: assets/teacher-ismi.jpg faylini qo'ying va src ni almashtiring.
@@ -791,6 +821,35 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
               <p>Boks bo`yicha 3 karra viloyat chempioni</p>
             </div>
           </article>
+          <article class="person-card student-card reveal">
+            <div class="person-image student-image">
+             <img src="assets/IMG_0283.jpg" alt="O'quvchi"> 
+              <div class="image-placeholder">O‘QUVCHI<br><small>Rasm joyi</small></div>
+              <span class="role-badge award">🏆 YUTUQ</span>
+            </div>
+            <div class="person-body">
+              <span class="card-kicker">Yosh iqtidor</span>
+              <h3>Abbosova Diyora</h3>
+              <p class="subject">gimnastika</p>
+              <div class="person-meta"><span>📚 5-sinf</span><span>🥇3-o'rin </span></div>
+              <p>Gimnastika bo`yicha Respublikasi Chempionati sovrindori</p>
+            </div>
+          </article>
+          <article class="person-card student-card reveal">
+            <div class="person-image student-image">
+             <img src="assets/IMG_8517.HEIC" alt="O'quvchi"> 
+              <div class="image-placeholder">O‘QUVCHI<br><small>Rasm joyi</small></div>
+              <span class="role-badge award">🏆 YUTUQ</span>
+            </div>
+            <div class="person-body">
+              <span class="card-kicker">Yosh iqtidor</span>
+              <h3>IRahmonberdiyeva Laziza </h3>
+              <p class="subject">baydarka</p>
+              <div class="person-meta"><span>📚 11-sinf</span><span>🥇 </span></div>
+              <p>baydarka boyicha u-20 chempioni</p>
+            </div>
+          </article>
+
         </div>
       </div>
     </section>
@@ -828,26 +887,37 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
           </div>
         </div>
 
+        <!-- BELL ACTIONS & TEST BAR -->
+        <div class="bell-actions-bar reveal">
+          <button type="button" id="ringBellNowBtn" class="btn btn-primary">🔔 Qo‘ng‘iroqni chalish (Sinov)</button>
+          <button type="button" id="playAnthemBtn" class="btn btn-ghost">🎵 Davlat madhiyasi</button>
+          <button type="button" id="playBreakSignalBtn" class="btn btn-ghost">📢 Kirish/chiqish signali</button>
+          <button type="button" id="stopAllAudioBtn" class="btn btn-ghost">⏹ Barchasini to‘xtatish</button>
+          <div class="bell-live-status">
+            <span class="status-dot"></span>
+            <span id="bellStatusLabel">Avtomatik audio faol</span>
+          </div>
+        </div>
+
         <div class="audio-settings reveal">
           <div class="audio-box">
             <span class="audio-icon">🔔</span>
             <div>
               <b>Dars boshlanishi / qo‘ng‘iroq</b>
-              <small>O‘zingizning audio faylingizni shu teg ichida belgilang.</small>
+              <small>Elektron melodik qo‘ng‘iroq va maxsus audio signal.</small>
             </div>
-            <!-- AUDIO 1: src="assets/qongiroq.mp3" qilib o'zgartiring -->
-            <audio id="bellAudio" controls preload="auto">
-              <!-- <source src="assets/qongiroq.mp3" type="audio/mpeg"> -->
+            <audio id="bellAudio" controls preload="auto" src="voicelab-speech (4).wav">
+              <source src="voicelab-speech (4).wav" type="audio/wav">
             </audio>
           </div>
 
           <div class="audio-box">
             <span class="audio-icon">🎵</span>
             <div>
-              <b>8:02 maxsus musiqa</b>
+              <b>8:02 Davlat madhiyasi</b>
+              <small>Ertalabki dars oldidan yangraydigan tantanali musiqa.</small>
             </div>
-            <!-- AUDIO 2: src="assets/ertalabki-musiqa.mp3" qilib o'zgartiring -->
-            <audio id="morningAudio" controls preload="auto">
+            <audio id="morningAudio" controls preload="auto" src="ozbekiston-respublikasi-davlat-madhiyasi-madhiya (2).mp3">
                <source src="ozbekiston-respublikasi-davlat-madhiyasi-madhiya (2).mp3" type="audio/mpeg">
             </audio>
           </div>
@@ -856,19 +926,211 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
             <span class="audio-icon">🚪</span>
             <div>
               <b>Kirish / chiqish signali</b>
-              <small>Tanaffus tugashi va boshlanishida ishlatiladigan audio.</small>
+              <small>Tanaffus boshlanishi va tugashida yangraydigan VoiceLab e’loni.</small>
             </div>
-             
-            <audio id="breakAudio" controls preload="auto">
-               <source src="voicelab-speech (4).wav" type="audio/mpeg"> 
+            <audio id="breakAudio" controls preload="auto" src="voicelab-speech (4).wav">
+               <source src="voicelab-speech (4).wav" type="audio/wav"> 
             </audio>
           </div>
         </div>
 
-        <div class="audio-note">
-          ⚠️ Brauzerlar xavfsizlik sababli ovozni foydalanuvchi sahifaga kirishidan oldin avtomatik ijro etishni bloklashi mumkin.
-          “Ovozlarni yoqish” tugmasini bir marta bosing — shundan keyin jadval avtomatik ishlaydi.
+        <div class="audio-note reveal">
+          ⚠️ Brauzerlar xavfsizlik sababli ovozni sahifa ochilganda avtomatik ijro etishni cheklashi mumkin.
+          “Ovozlarni yoqish” tugmasini bir marta bosing — shundan so‘ng qo‘ng‘iroq va jadval signallari to‘liq avtomatik ishlaydi.
           <button id="enableAudio" class="btn btn-primary btn-small">🔊 Ovozlarni yoqish</button>
+        </div>
+
+        <!-- OVOZLI E'LONLAR STUDIYASI: ELEVENLABS VOICE-LAB (https://elevenlabs.io/app/voice-lab) -->
+        <div class="elevenlabs-card voicelab-card reveal" id="elevenlabsBox">
+          <div class="elevenlabs-header voicelab-header">
+            <div class="voice-provider-tabs">
+              <button type="button" class="provider-tab active" data-provider="elevenlabs">🌐 ElevenLabs Voice-Lab (Asosiy)</button>
+              <button type="button" class="provider-tab" data-provider="givenvoice">🎙 Siz bergan Voice-Lab namunasi</button>
+              <button type="button" class="provider-tab" data-provider="browser">💻 Tizim nutq sintezi</button>
+            </div>
+            <div class="elevenlabs-title-row">
+              <h3>ElevenLabs Voice-Lab — Professional AI Ovoz Studiyasi</h3>
+              <a href="https://elevenlabs.io/app/voice-lab" target="_blank" rel="noopener" class="elevenlabs-direct-link" title="ElevenLabs Voice-Lab rasmiy sahifasi">
+                🔗 https://elevenlabs.io/app/voice-lab ↗
+              </a>
+            </div>
+            <p id="voiceProviderDesc">ElevenLabs Voice-Lab neyrotarmoq texnologiyasi orqali matnlarni eng yuqori sifatda, tabiiy va chiroyli ovozda o‘qiting.</p>
+          </div>
+
+          <div class="elevenlabs-body voicelab-body">
+            <!-- SIZ BERGAN HAQIQIY VOICELAB AI OVOZI SHOWCASE -->
+            <div class="given-voice-showcase" id="givenVoiceShowcase">
+              <div class="given-voice-left">
+                <span class="given-voice-badge">✨ SIZ YARATGAN ELEVENLABS VOICELAB NAMUNASI</span>
+                <h4>ElevenLabs Voice-Lab Haqiqiy Nutq Namunasi</h4>
+                <p>Siz taqdim etgan fayl: <code>voicelab-speech (4).wav</code> — ElevenLabs Voice-Lab neyrotarmog‘ida yaratilgan professional, jonli o‘zbekcha nutq.</p>
+              </div>
+              <div class="given-voice-actions">
+                <button type="button" id="playGivenVoiceBtn" class="btn btn-primary">
+                  <span>▶</span> Voice-Lab namunasini tinglash
+                </button>
+                <a href="https://elevenlabs.io/app/voice-lab" target="_blank" rel="noopener" class="btn btn-ghost btn-small">
+                  🌐 ElevenLabs Voice-Lab ochish ↗
+                </a>
+              </div>
+              <audio id="givenVoiceAudio" preload="auto" src="voicelab-speech (4).wav"></audio>
+            </div>
+
+            <!-- Preset announcements -->
+            <div class="voice-presets-wrap">
+              <span class="presets-title">⚡ Tayyor maktab e'lonlari:</span>
+              <div class="voice-presets">
+                <button type="button" class="preset-chip" data-text="Diqqat, 1-dars boshlandi! Barcha o‘quvchilar va ustozlar sinfxonalarga kiring!">🔔 Dars boshlandi</button>
+                <button type="button" class="preset-chip" data-text="Diqqat! Katta tanaffus boshlandi. O‘quvchilar 10 daqiqa dam olishlari mumkin!">☕ Katta tanaffus</button>
+                <button type="button" class="preset-chip" data-text="Diqqat, tanaffus tugadi! Barcha o‘quvchilar darsga shoshiling!">🚪 Tanaffus tugadi</button>
+                <button type="button" class="preset-chip" data-text="Hurmatli ustozlar va o‘quvchilar! Bugun maktabimizda tadbir bo‘lib o‘tadi.">📢 Maktab tadbiri</button>
+                <button type="button" class="preset-chip" data-text="Olimpiada va sport musobaqalarida faxrli o‘rinlarni egallagan barcha o‘quvchilarimizni tabriklaymiz!">🏆 Yutuq tabrigi</button>
+              </div>
+            </div>
+
+            <!-- Text input -->
+            <div class="voice-textarea-wrap">
+              <textarea id="voiceText" rows="3" placeholder="O‘qilishi kerak bo‘lgan matnni shu yerga yozing... (Masalan: Diqqat, 5-A sinf o‘quvchilari kutubxonaga yig‘ilsin!)"></textarea>
+            </div>
+
+            <!-- Controls row: ElevenLabs Voice-Lab options -->
+            <div class="voice-controls-row" id="elevenlabsControls">
+              <div class="voice-control-group">
+                <label for="elevenVoiceSelect">ElevenLabs Voice-Lab Ovozi:</label>
+                <select id="elevenVoiceSelect">
+                  <option value="21m00Tcm4TlvDq8ikWAM" selected>Rachel (Mayin & Tabiiy Ayol Ovozi · Voice-Lab)</option>
+                  <option value="pNInz6obpgDQGcFmaJgB">Adam (Rasmiy & Chuqur Erkak Ovozi · Voice-Lab)</option>
+                  <option value="piTKgcLEGmPE4e6mEKli">Nicole (Jarangdor & Jonli Ayol Ovozi · Voice-Lab)</option>
+                  <option value="JBFqnCBsd6RMkjVDRZzb">George (Iliq Hikoyachi Erkak Ovozi · Voice-Lab)</option>
+                  <option value="ErXwobaYiN019PkySvjV">Antoni (Xushmuomala & Aniq · Voice-Lab)</option>
+                  <option value="EXAVITQu4vr4xnSDxMaL">Bella (Mayin & Bosiq · Voice-Lab)</option>
+                  <option value="custom">O‘z Voice-Lab Clone ID sini kiritish...</option>
+                </select>
+              </div>
+
+              <div class="voice-control-group" id="customVoiceIdWrap" style="display:none;">
+                <label for="elevenCustomVoiceId">Voice-Lab ID:</label>
+                <input type="text" id="elevenCustomVoiceId" placeholder="Voice-Lab dan olingan Voice ID">
+              </div>
+
+              <div class="voice-control-group">
+                <label for="voiceSpeed">Tezlik:</label>
+                <select id="voiceSpeed">
+                  <option value="0.85">0.85x (Bosiq)</option>
+                  <option value="1.0" selected>1.0x (Normal)</option>
+                  <option value="1.15">1.15x (Tezroq)</option>
+                </select>
+              </div>
+
+              <div class="voice-control-group checkbox-group">
+                <label class="custom-checkbox">
+                  <input type="checkbox" id="voiceWithBell" checked>
+                  <span>Qo‘ng‘iroq bilan boshlansin</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Action buttons & waveform -->
+            <div class="voice-actions-row">
+              <div class="voice-main-buttons">
+                <button type="button" id="speakBtn" class="btn btn-primary">
+                  <span>▶</span> Ovozda o‘qish
+                </button>
+                <button type="button" id="stopSpeakBtn" class="btn btn-ghost" style="display:none;">
+                  <span>⏹</span> To‘xtatish
+                </button>
+                <button type="button" id="voiceApiToggle" class="btn btn-ghost btn-small">
+                  ⚙ ElevenLabs Sozlamalari
+                </button>
+              </div>
+
+              <div id="voiceWave" class="voice-wave" style="display:none;">
+                <div class="wave-bars">
+                  <span></span><span></span><span></span><span></span><span></span>
+                </div>
+                <span id="voiceWaveStatus">ElevenLabs Voice-Lab ovozi yangramoqda...</span>
+              </div>
+            </div>
+
+            <!-- API Key config (hidden by default) -->
+            <div id="voiceApiConfig" class="voice-api-config" style="display:none;">
+              <div class="api-config-inner">
+                <div class="api-config-head">
+                  <b>ElevenLabs Voice-Lab API Kaliti (xi-api-key)</b>
+                  <small><a href="https://elevenlabs.io/app/voice-lab" target="_blank" rel="noopener">ElevenLabs Voice-Lab</a> bulutidan to‘g‘ridan-to‘g‘ri ultra-sifatli ovoz olish uchun (kalitsiz ham tabiiy ovozda to‘liq ishlaydi):</small>
+                </div>
+                <div class="api-dual-inputs">
+                  <div class="api-input-item" style="grid-column: 1 / -1;">
+                    <label>ElevenLabs xi-api-key:</label>
+                    <input type="password" id="elevenLabsApiKeyInput" placeholder="ElevenLabs xi-api-key (masalan: 8a7f...)">
+                  </div>
+                </div>
+                <div class="api-config-buttons">
+                  <button type="button" id="saveVoiceApiKeyBtn" class="btn btn-primary btn-small">Kalitni saqlash</button>
+                  <a href="https://elevenlabs.io/app/voice-lab" target="_blank" rel="noopener" class="btn btn-ghost btn-small">
+                    Voice-Lab sahifasini ochish ↗
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- YOUTUBE MAKTAB QO'NG'IROG'I VA MUSIQA / VIDEO BO'LIMI -->
+        <div class="youtube-bell-card reveal" id="youtubeBellCard">
+          <div class="youtube-bell-header">
+            <div class="youtube-badge">
+              <span class="yt-dot">▶</span>
+              YouTube Maktab Qo‘ng‘irog‘i va Musiqa Pleyeri
+            </div>
+            <h3>Maktab qo‘ng‘irog‘i va tadbirlar uchun YouTube videolari</h3>
+            <p>Videoni tanlang yoki istalgan YouTube video havolasini qo‘ying — to‘g‘ridan-to‘g‘ri saytda videoni ko‘rib tinglashingiz mumkin.</p>
+          </div>
+
+          <!-- YouTube Presets -->
+          <div class="youtube-presets-wrap">
+            <span class="presets-title">⚡ Tanlangan maktab videolari va musiqalari:</span>
+            <div class="youtube-presets">
+              <button type="button" class="yt-preset-chip active" data-vid="QG80uYqL1lM" data-title="O‘zbekiston Respublikasi Davlat Madhiyasi">
+                🇺🇿 Davlat Madhiyasi
+              </button>
+              <button type="button" class="yt-preset-chip" data-vid="Fq3z3y0aP7k" data-title="Klassik Maktab Qo‘ng‘irog‘i">
+                🔔 Maktab Qo‘ng‘irog‘i
+              </button>
+              <button type="button" class="yt-preset-chip" data-vid="2G8LAiK5W1k" data-title="Ertalabki maktab badantarbiyasi">
+                🏃‍♂️ Ertalabki badantarbiya
+              </button>
+              <button type="button" class="yt-preset-chip" data-vid="jfKfPfyJRdk" data-title="Tanaffus uchun lofi va dam olish musiqasi">
+                ☕ Tanaffus musiqasi (Lofi)
+              </button>
+            </div>
+          </div>
+
+          <!-- Custom YouTube URL input -->
+          <div class="youtube-input-wrap">
+            <input type="text" id="customYoutubeUrl" placeholder="Istalgan YouTube havolasi (masalan: https://www.youtube.com/watch?v=... yoki https://youtu.be/...)">
+            <button type="button" id="loadCustomYoutubeBtn" class="btn btn-primary">
+              <span>▶</span> Videoni qo‘yish
+            </button>
+          </div>
+
+          <!-- Responsive YouTube Iframe Player -->
+          <div class="youtube-player-container">
+            <div class="youtube-player-wrapper">
+              <iframe id="youtubeBellIframe" src="https://www.youtube-nocookie.com/embed/QG80uYqL1lM?enablejsapi=1" title="30-Maktab YouTube video pleyeri" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            </div>
+          </div>
+
+          <!-- YouTube Controls bar -->
+          <div class="youtube-controls-bar">
+            <div class="yt-current-title">
+              <b>Tanlangan:</b> <span id="currentYtTitle">O‘zbekiston Respublikasi Davlat Madhiyasi</span>
+            </div>
+            <div class="yt-actions">
+              <button type="button" id="ytPlayBtn" class="btn btn-primary btn-small">▶ Qayta ochish</button>
+              <button type="button" id="ytStopBtn" class="btn btn-ghost btn-small">⏹ To‘xtatish</button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -955,9 +1217,34 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
           <aside class="ai-sidebar">
             <div class="ai-brand"><span>✦</span><div><b>NURAS AI</b><small>30-Maktab yordamchisi</small></div></div>
             <div class="ai-info">
-              <b>O‘zingiz sozlang</b>
+              <b>ChatGPT kabi universal AI</b>
+              <p>Saytdagi barcha o‘qituvchilar (masalan, matematika o‘qituvchilari kimligi), dars jadvali, yutuqli o‘quvchilar va har qanday umumiy savollarga to‘liq javob beradi.</p>
             </div>
-            <div class="ai-status"><i></i><span id="aiModeText">Mahalliy bilim rejimi</span></div>
+            <div class="ai-status"><i></i><span id="aiModeText">Sayt ma’lumotlari + ChatGPT</span></div>
+            <div class="ai-sidebar-actions">
+              <a href="https://t.me/Maktab30Xovos_bot" target="_blank" rel="noopener" class="btn btn-primary btn-small tg-bot-link" title="Telegram Bot">✈ @Maktab30Xovos_bot</a>
+              <button type="button" id="clearChatBtn" class="btn btn-ghost btn-small">🗑 Chatni tozalash</button>
+              <button type="button" id="aiApiToggleBtn" class="btn btn-ghost btn-small">⚙ AI API Sozlamasi</button>
+            </div>
+            <div id="aiApiConfigBox" class="ai-api-config-box" style="display:none;">
+              <small>Google Gemini (bepul) yoki OpenAI / Groq API kaliti (ixtiyoriy, kalitsiz ham to‘liq ishlaydi):</small>
+              <input type="password" id="customApiKeyInput" placeholder="Gemini (AIzaSy...) yoki OpenAI (sk-...) kaliti" class="ai-api-input">
+              <button type="button" id="saveAiApiKeyBtn" class="btn btn-primary btn-small">Saqlash</button>
+            </div>
+
+            <!-- SAYTNI BOTGA ULASH BLOKI -->
+            <div class="tg-site-connect-panel">
+              <div class="tg-status-row">
+                <span class="tg-live-dot"></span>
+                <b>Telegram Bot Ulangan</b>
+              </div>
+              <small class="tg-id-text">ID: <b>8974507387</b> · <a href="https://t.me/Maktab30Xovos_bot" target="_blank" rel="noopener">@Maktab30Xovos_bot</a></small>
+              <div class="tg-direct-form">
+                <input type="text" id="tgDirectName" placeholder="Ismingiz yoki telefoningiz...">
+                <textarea id="tgDirectMsg" rows="2" placeholder="Botga savol yoki xabar yuboring..."></textarea>
+                <button type="button" id="sendToBotBtn" class="btn btn-primary btn-small">✈ Botga yuborish</button>
+              </div>
+            </div>
           </aside>
 
           <div class="chat">
@@ -965,17 +1252,25 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
               <div class="message bot">
                 <div class="avatar">✦</div>
                 <div class="bubble">
-                  Assalomu alaykum! Men <b>NURAS AI</b>. Maktab haqida siz kiritgan ma’lumotlar bo‘yicha va umumiy savollarga javob berishga yordam beraman.
+                  <div class="bubble-text">
+                    Assalomu alaykum! Men <b>NURAS AI</b> — 30-maktabning universal sun’iy intellekt yordamchisiman.
+                    <br><br>
+                    Saytdagi barcha o‘qituvchilar, dars jadvali, yutuqli o‘quvchilar haqida hamda xuddi <b>ChatGPT</b> kabi har qanday savolingizga (matematika, fan, dasturlash, tarix, insho, kundalik savollar) javob bera olaman!
+                  </div>
                   <div class="suggestions">
-                    <button data-question="30-maktab qayerda joylashgan?">Maktab qayerda?</button>
-                    <button data-question="Darslar necha daqiqa?">Dars davomiyligi?</button>
-                    <button data-question="O‘zbekiston poytaxti qayer?">Umumiy savol</button>
+                    <button type="button" data-question="Matematika o‘qituvchisi kim?">📐 Matematika o‘qituvchisi kim?</button>
+                    <button type="button" data-question="Maktab direktori kim va u qaysi fandan dars beradi?">🎓 Maktab direktori kim?</button>
+                    <button type="button" data-question="Informatika va fizika o‘qituvchilari haqida ma’lumot ber">💻 Informatika va Fizika</button>
+                    <button type="button" data-question="Qaysi o‘quvchilar chempion va sovrindor bo‘lgan?">🏆 Yutuqli o‘quvchilar</button>
+                    <button type="button" data-question="Katta tanaffus soat nechada va necha daqiqa?">⏱ Katta tanaffus qachon?</button>
+                    <button type="button" data-question="Kvadrat tenglama formulasini va misol yechib ber">🧠 Kvadrat tenglama (ChatGPT)</button>
+                    <button type="button" data-question="Amir Temur davlati va uning shiori haqida gapirib ber">📜 Tarixiy ma’lumot</button>
                   </div>
                 </div>
               </div>
             </div>
             <form class="chat-input" id="chatForm">
-              <input id="chatInput" type="text" placeholder="Savolingizni yozing..." autocomplete="off">
+              <input id="chatInput" type="text" placeholder="Savolingizni yozing (masalan: Matematika o‘qituvchisi kim?)..." autocomplete="off">
               <button type="submit">Yuborish ➤</button>
             </form>
           </div>
@@ -1004,6 +1299,7 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
             <input id="reviewName" required maxlength="40" placeholder="Ismingiz">
             <textarea id="reviewText" required maxlength="300" rows="3" placeholder="Fikringiz..."></textarea>
             <button class="btn btn-primary" type="submit">⭐ Bahoni yuborish</button>
+            <div id="reviewSuccessAlert" class="review-success-alert" style="display:none;"></div>
           </form>
         </div>
 
@@ -1040,7 +1336,8 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
              2) Instagram
              3) YouTube
              =================================================== -->
-        <a href="https://t.me/maktab_30Xovos" target="_blank" rel="noopener">✈ Telegram</a>
+        <a href="https://t.me/Maktab30Xovos_bot" target="_blank" rel="noopener">✈ Telegram Bot (@Maktab30Xovos_bot)</a>
+        <a href="https://t.me/maktab_30Xovos" target="_blank" rel="noopener">✈ Telegram Kanal</a>
         <a href="https://instagram.com/30maktabrasmiy" target="_blank" rel="noopener">◎ Instagram</a>
         <a href="https://youtube.com/" target="_blank" rel="noopener">▶ YouTube</a>
       </div>
@@ -1056,6 +1353,15 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
 
   <button id="toTop" class="to-top" aria-label="Tepaga chiqish">↑</button>
   <div id="toast" class="toast"></div>
+
+  <!-- FLOATING TELEGRAM BOT WIDGET -->
+  <aside class="tg-float-widget" id="tgFloatWidget">
+    <a href="https://t.me/Maktab30Xovos_bot" target="_blank" rel="noopener" class="tg-float-btn" title="30-Maktab Telegram Boti: @Maktab30Xovos_bot">
+      <span class="tg-icon">✈</span>
+      <span class="tg-label">Telegram Bot</span>
+      <span class="tg-ping-dot"></span>
+    </a>
+  </aside>
 
   <script src="script.js"></script>
 </body>
