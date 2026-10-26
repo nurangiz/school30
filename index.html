@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b4ea2">
   <meta name="description" content="Xovos tumani 30-maktab — zamonaviy maktab axborot portali.">
   <title>30-Maktab | Xovos tumani</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=20261027_350">
 </head>
 <body>
   <!-- =========================================================
@@ -940,7 +940,7 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
           <button id="enableAudio" class="btn btn-primary btn-small">🔊 Ovozlarni yoqish</button>
         </div>
 
-        <!-- OVOZLI E'LONLAR STUDIYASI: ELEVENLABS VOICE-LAB (https://elevenlabs.io/app/voice-lab) -->
+        <!-- OVOZLI E'LONLAR STUDIYASI: ELEVENLABS VOICE-LAB (https://elevenlabs.io/app/sign-in?redirect=%2Fapp%2Fvoice-lab) -->
         <div class="elevenlabs-card voicelab-card reveal" id="elevenlabsBox">
           <div class="elevenlabs-header voicelab-header">
             <div class="voice-provider-tabs">
@@ -949,12 +949,13 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
               <button type="button" class="provider-tab" data-provider="browser">💻 Tizim nutq sintezi</button>
             </div>
             <div class="elevenlabs-title-row">
-              <h3>ElevenLabs Voice-Lab — Professional AI Ovoz Studiyasi</h3>
-              <a href="https://elevenlabs.io/app/voice-lab" target="_blank" rel="noopener" class="elevenlabs-direct-link" title="ElevenLabs Voice-Lab rasmiy sahifasi">
-                🔗 https://elevenlabs.io/app/voice-lab ↗
-              </a>
+              <h3>ElevenLabs Voice-Lab — Professional O‘zbekcha AI Ovoz Studiyasi</h3>
+              <span class="elevenlabs-status-badge" style="display:inline-flex; align-items:center; gap:6px; background:rgba(16, 185, 129, 0.12); color:#059669; padding:6px 14px; border-radius:99px; font-size:12px; font-weight:700;">
+                <span style="width:8px; height:8px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981;"></span>
+                100% Sayt Ichida Jonli Yangraydi
+              </span>
             </div>
-            <p id="voiceProviderDesc">ElevenLabs Voice-Lab neyrotarmoq texnologiyasi orqali matnlarni eng yuqori sifatda, tabiiy va chiroyli ovozda o‘qiting.</p>
+            <p id="voiceProviderDesc">Shu yerga ixtiyoriy matn yozing — neyrotarmoq uni maktab saytining o‘zida tabiiy va go‘zal o‘zbek aksentida o‘qib beradi.</p>
           </div>
 
           <div class="elevenlabs-body voicelab-body">
@@ -969,9 +970,9 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
                 <button type="button" id="playGivenVoiceBtn" class="btn btn-primary">
                   <span>▶</span> Voice-Lab namunasini tinglash
                 </button>
-                <a href="https://elevenlabs.io/app/voice-lab" target="_blank" rel="noopener" class="btn btn-ghost btn-small">
-                  🌐 ElevenLabs Voice-Lab ochish ↗
-                </a>
+                <button type="button" class="btn btn-ghost btn-small" onclick="document.getElementById('voiceText').focus()">
+                  ✍️ Matn yozib o‘qitish
+                </button>
               </div>
               <audio id="givenVoiceAudio" preload="auto" src="voicelab-speech (4).wav"></audio>
             </div>
@@ -998,13 +999,19 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
               <div class="voice-control-group">
                 <label for="elevenVoiceSelect">ElevenLabs Voice-Lab Ovozi:</label>
                 <select id="elevenVoiceSelect">
-                  <option value="21m00Tcm4TlvDq8ikWAM" selected>Rachel (Mayin & Tabiiy Ayol Ovozi · Voice-Lab)</option>
-                  <option value="pNInz6obpgDQGcFmaJgB">Adam (Rasmiy & Chuqur Erkak Ovozi · Voice-Lab)</option>
-                  <option value="piTKgcLEGmPE4e6mEKli">Nicole (Jarangdor & Jonli Ayol Ovozi · Voice-Lab)</option>
-                  <option value="JBFqnCBsd6RMkjVDRZzb">George (Iliq Hikoyachi Erkak Ovozi · Voice-Lab)</option>
-                  <option value="ErXwobaYiN019PkySvjV">Antoni (Xushmuomala & Aniq · Voice-Lab)</option>
-                  <option value="EXAVITQu4vr4xnSDxMaL">Bella (Mayin & Bosiq · Voice-Lab)</option>
-                  <option value="custom">O‘z Voice-Lab Clone ID sini kiritish...</option>
+                  <optgroup label="🇺🇿 O‘zbekcha Tabiiy Neyrotarmoq Ovozlari (Beg‘ubor Aksent)">
+                    <option value="uz-UZ-MadinaNeural" selected>Madina (Mayin & Jarangdor O‘zbek Ayol Ovozi · Tabiiy Aksent)</option>
+                    <option value="uz-UZ-SardorNeural">Sardor (Rasmiy & Aniq O‘zbek Erkak Ovozi · Tabiiy Aksent)</option>
+                  </optgroup>
+                  <optgroup label="🌐 ElevenLabs Voice-Lab Multilingual v2 Ovozlari">
+                    <option value="21m00Tcm4TlvDq8ikWAM">Rachel (Mayin & Tabiiy Ayol Ovozi · ElevenLabs Voice-Lab)</option>
+                    <option value="pNInz6obpgDQGcFmaJgB">Adam (Rasmiy & Chuqur Erkak Ovozi · ElevenLabs Voice-Lab)</option>
+                    <option value="piTKgcLEGmPE4e6mEKli">Nicole (Jarangdor & Jonli Ayol Ovozi · ElevenLabs Voice-Lab)</option>
+                    <option value="JBFqnCBsd6RMkjVDRZzb">George (Iliq Hikoyachi Erkak Ovozi · ElevenLabs Voice-Lab)</option>
+                    <option value="ErXwobaYiN019PkySvjV">Antoni (Xushmuomala & Aniq · ElevenLabs Voice-Lab)</option>
+                    <option value="EXAVITQu4vr4xnSDxMaL">Bella (Mayin & Bosiq · ElevenLabs Voice-Lab)</option>
+                    <option value="custom">O‘z Voice-Lab Clone ID sini kiritish...</option>
+                  </optgroup>
                 </select>
               </div>
 
@@ -1056,8 +1063,18 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
             <div id="voiceApiConfig" class="voice-api-config" style="display:none;">
               <div class="api-config-inner">
                 <div class="api-config-head">
-                  <b>ElevenLabs Voice-Lab API Kaliti (xi-api-key)</b>
-                  <small><a href="https://elevenlabs.io/app/voice-lab" target="_blank" rel="noopener">ElevenLabs Voice-Lab</a> bulutidan to‘g‘ridan-to‘g‘ri ultra-sifatli ovoz olish uchun (kalitsiz ham tabiiy ovozda to‘liq ishlaydi):</small>
+                  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <b>ElevenLabs Voice-Lab Integratsiyasi (https://elevenlabs.io/app/sign-in?redirect=%2Fapp%2Fvoice-lab)</b>
+                    <a href="https://elevenlabs.io/app/sign-in?redirect=%2Fapp%2Fvoice-lab" target="_blank" rel="noopener" class="btn btn-primary btn-small" style="text-decoration:none;">
+                      🚀 Voice-Lab ga kirish (Sign in) ↗
+                    </a>
+                  </div>
+                  <p style="margin-top:8px; font-size:12.5px; color:var(--muted); line-height:1.5;">
+                    1. <a href="https://elevenlabs.io/app/sign-in?redirect=%2Fapp%2Fvoice-lab" target="_blank" rel="noopener" style="font-weight:700; color:var(--blue);">https://elevenlabs.io/app/sign-in?redirect=%2Fapp%2Fvoice-lab</a> havolasi orqali tizimga kiring.<br>
+                    2. Profilingizdan <b>xi-api-key</b> (API Kaliti) nusxasini oling.<br>
+                    3. Quyidagi maydonga qo‘yib <b>"Kalitni saqlash"</b> tugmasini bosing.<br>
+                    ✨ <i>Saytimizda kalitsiz ham Madina va Sardor neyro-ovozlari orqali 100% beg‘ubor va go‘zal o‘zbek aksentida so‘zlashadi!</i>
+                  </p>
                 </div>
                 <div class="api-dual-inputs">
                   <div class="api-input-item" style="grid-column: 1 / -1;">
@@ -1067,7 +1084,7 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
                 </div>
                 <div class="api-config-buttons">
                   <button type="button" id="saveVoiceApiKeyBtn" class="btn btn-primary btn-small">Kalitni saqlash</button>
-                  <a href="https://elevenlabs.io/app/voice-lab" target="_blank" rel="noopener" class="btn btn-ghost btn-small">
+                  <a href="https://elevenlabs.io/app/sign-in?redirect=%2Fapp%2Fvoice-lab" target="_blank" rel="noopener" class="btn btn-ghost btn-small">
                     Voice-Lab sahifasini ochish ↗
                   </a>
                 </div>
@@ -1215,20 +1232,27 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
 
         <div class="ai-shell reveal">
           <aside class="ai-sidebar">
-            <div class="ai-brand"><span>✦</span><div><b>NURAS AI</b><small>30-Maktab yordamchisi</small></div></div>
-            <div class="ai-info">
-              <b>ChatGPT kabi universal AI</b>
-              <p>Saytdagi barcha o‘qituvchilar (masalan, matematika o‘qituvchilari kimligi), dars jadvali, yutuqli o‘quvchilar va har qanday umumiy savollarga to‘liq javob beradi.</p>
+            <div class="ai-brand">
+              <span style="background:linear-gradient(135deg, #1a73e8, #8e24aa); color:#fff;">✨</span>
+              <div><b>Google Gemini AI</b><small>30-Maktab Universal Yordamchisi</small></div>
             </div>
-            <div class="ai-status"><i></i><span id="aiModeText">Sayt ma’lumotlari + ChatGPT</span></div>
+            <div class="ai-info">
+              <b>Google Gemini 1.5 Flash Neyrotarmog‘i</b>
+              <p>Maktab o‘qituvchilari, dars jadvali, yutuqlar, hamda matematika, fizika, dasturlash va barcha bilimlarga Google Gemini asosida javob beradi.</p>
+            </div>
+            <div class="ai-status"><i></i><span id="aiModeText">Google Gemini AI + 30-Maktab Bilimlar Bazasi</span></div>
             <div class="ai-sidebar-actions">
+              <div class="gemini-status-pill" style="display:flex; align-items:center; gap:8px; background:linear-gradient(135deg, rgba(26,115,232,0.1), rgba(142,36,170,0.12)); border:1px solid rgba(26,115,232,0.25); color:#1a73e8; padding:8px 14px; border-radius:12px; font-size:12px; font-weight:700;">
+                <span style="width:8px; height:8px; border-radius:50%; background:#1a73e8; box-shadow:0 0 8px #1a73e8;"></span>
+                <span>✨ Google Gemini 1.5 Flash Faol (100% Sayt Ichida)</span>
+              </div>
               <a href="https://t.me/xovosmaktab30_aibot" target="_blank" rel="noopener" class="btn btn-primary btn-small tg-bot-link" title="Telegram Bot">✈ @xovosmaktab30_aibot</a>
               <button type="button" id="clearChatBtn" class="btn btn-ghost btn-small">🗑 Chatni tozalash</button>
-              <button type="button" id="aiApiToggleBtn" class="btn btn-ghost btn-small">⚙ AI API Sozlamasi</button>
+              <button type="button" id="aiApiToggleBtn" class="btn btn-ghost btn-small">⚙ Gemini API Kalitini Sozlash</button>
             </div>
             <div id="aiApiConfigBox" class="ai-api-config-box" style="display:none;">
-              <small>Google Gemini (bepul) yoki OpenAI / Groq API kaliti (ixtiyoriy, kalitsiz ham to‘liq ishlaydi):</small>
-              <input type="password" id="customApiKeyInput" placeholder="Gemini (AIzaSy...) yoki OpenAI (sk-...) kaliti" class="ai-api-input">
+              <small>Google Gemini (AIzaSy...) yoki OpenAI / Groq API kaliti (ixtiyoriy, kalitsiz ham to‘liq ishlaydi):</small>
+              <input type="password" id="customApiKeyInput" placeholder="Google Gemini API kaliti (AIzaSy...)" class="ai-api-input">
               <button type="button" id="saveAiApiKeyBtn" class="btn btn-primary btn-small">Saqlash</button>
             </div>
 
@@ -1254,11 +1278,12 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
                 <div class="avatar">✦</div>
                 <div class="bubble">
                   <div class="bubble-text">
-                    Assalomu alaykum! Men <b>NURAS AI</b> — 30-maktabning universal sun’iy intellekt yordamchisiman.
+                    Assalomu alaykum! Men <b>Google Gemini</b> va <b>NURAS AI</b> — 30-maktabning universal sun’iy intellekt yordamchisiman.
                     <br><br>
                     Saytdagi barcha o‘qituvchilar, dars jadvali, yutuqli o‘quvchilar haqida hamda xuddi <b>ChatGPT</b> kabi har qanday savolingizga (matematika, fan, dasturlash, tarix, insho, kundalik savollar) javob bera olaman!
                   </div>
                   <div class="suggestions">
+                    <button type="button" data-question="Google Gemini nima va u qanday imkoniyatlarga ega?">✨ Google Gemini nima?</button>
                     <button type="button" data-question="Matematika o‘qituvchisi kim?">📐 Matematika o‘qituvchisi kim?</button>
                     <button type="button" data-question="Maktab direktori kim va u qaysi fandan dars beradi?">🎓 Maktab direktori kim?</button>
                     <button type="button" data-question="Informatika va fizika o‘qituvchilari haqida ma’lumot ber">💻 Informatika va Fizika</button>
@@ -1274,10 +1299,10 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
               <span class="chat-contact-icon">📞</span>
               <input type="text" id="chatUserContact" placeholder="Admindan javob olish uchun telefoningiz yoki @Telegram (ixtiyoriy)..." autocomplete="tel">
             </div>
-            <form class="chat-input" id="chatForm">
-              <input id="chatInput" type="text" placeholder="Savolingizni yozing (masalan: Matematika o‘qituvchisi kim?)..." autocomplete="off">
-              <button type="submit">Yuborish ➤</button>
-            </form>
+            <div class="chat-input" id="chatInputBox">
+              <input id="chatInput" type="text" placeholder="Google Gemini AI ga savol yozing (masalan: Matematika o‘qituvchisi kim?)..." autocomplete="off">
+              <button type="button" id="chatSendBtn">Yuborish ➤</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1368,6 +1393,6 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
     </a>
   </aside>
 
-  <script src="script.js"></script>
+  <script src="script.js?v=20261027_350"></script>
 </body>
 </html>

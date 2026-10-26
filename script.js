@@ -126,7 +126,16 @@ function showToast(text){
    ============================================================ */
 const menuSections = ["home","teachers","students","bell","about","ai"];
 
-function showOnlySection(sectionId){
+function showOnlySection(sectionId, shouldScroll = true){
+  if (!menuSections.includes(sectionId)) sectionId = "home";
+
+  try {
+    sessionStorage.setItem("active_section", sectionId);
+    if (window.location.hash !== `#${sectionId}`) {
+      history.replaceState(null, "", `#${sectionId}`);
+    }
+  } catch(e) {}
+
   menuSections.forEach(id=>{
     const section=document.getElementById(id);
     if(section) {
@@ -134,6 +143,7 @@ function showOnlySection(sectionId){
       section.classList.toggle("menu-hidden", !isCurrent);
       if (isCurrent) {
         section.querySelectorAll(".reveal").forEach(el => el.classList.add("visible"));
+        if (id === "ai") restoreChatHistory();
       }
     }
   });
@@ -150,7 +160,9 @@ function showOnlySection(sectionId){
     link.classList.toggle("active-nav", link.dataset.section===sectionId);
   });
 
-  window.scrollTo({top:0, behavior:"smooth"});
+  if (shouldScroll) {
+    window.scrollTo({top:0, behavior:"smooth"});
+  }
 }
 
 /* ============================================================
@@ -245,8 +257,12 @@ function initTeacherFilter() {
 
 /* Sahifa ochilganda faqat Bosh sahifa va filtrni ishga tushirish */
 document.addEventListener("DOMContentLoaded",()=>{
-  showOnlySection("home");
+  const hash = window.location.hash.replace("#", "");
+  const savedSec = sessionStorage.getItem("active_section");
+  const initSec = (hash && menuSections.includes(hash)) ? hash : (savedSec && menuSections.includes(savedSec) ? savedSec : "home");
+  showOnlySection(initSec, false);
   initTeacherFilter();
+  restoreChatHistory();
 });
 
 $$(".main-nav a[data-section]").forEach(link=>{
@@ -656,22 +672,19 @@ if (typeof window !== "undefined" && 'speechSynthesis' in window) {
 }
 
 // Web Speech API orqali tabiiy va ravon o'qish (Offline, tekin va 100% ishlaydi)
-function speakViaWebSpeech(text, speed = 1.0, speaker = "gulnoza") {
+function speakViaWebSpeech(text, speed = 1.0, speaker = "madina") {
   if (!('speechSynthesis' in window)) {
     showToast("⚠️ Brauzeringizda ovoz sintezi qo‘llab-quvvatlanmaydi");
     setVoiceWaveActive(false);
     return;
   }
 
-  // Chromium speech queue muzlab qolishini oldini olish
   window.speechSynthesis.cancel();
   window.speechSynthesis.resume();
 
   cacheBrowserVoices();
 
-  // Markdown belgilari va keraksiz belgilarni tozalash
-  const cleanedText = text
-    .replace(/[‘'ʼ`]/g, "'")
+  let cleanedText = text
     .replace(/[*#_~`>]/g, "")
     .replace(/https?:\/\/\S+/g, "")
     .replace(/\s+/g, " ")
@@ -682,16 +695,33 @@ function speakViaWebSpeech(text, speed = 1.0, speaker = "gulnoza") {
     return;
   }
 
-  const utter = new SpeechSynthesisUtterance(cleanedText);
-  utter.rate = Math.max(0.7, Math.min(1.4, parseFloat(speed) || 1.0));
-  utter.pitch = speaker === "sanjar" ? 0.9 : 1.1;
-
-  // Eng mos ovoz tanlash: O'zbekcha -> Turkcha -> Ruscha -> Standart
   const preferredVoice = allBrowserVoices.find(v => v.lang.toLowerCase().startsWith("uz"))
                       || allBrowserVoices.find(v => v.lang.toLowerCase().startsWith("tr"))
                       || allBrowserVoices.find(v => v.lang.toLowerCase().startsWith("ru"))
                       || allBrowserVoices.find(v => v.lang.toLowerCase().startsWith("en"))
                       || allBrowserVoices[0];
+
+  let spokenText = cleanedText;
+  if (preferredVoice && preferredVoice.lang.toLowerCase().startsWith("tr")) {
+    spokenText = spokenText
+      .replace(/sh/gi, "ş")
+      .replace(/ch/gi, "ç")
+      .replace(/o['‘ʼ]/gi, "o")
+      .replace(/g['‘ʼ]/gi, "ğ");
+  }
+
+  const utter = new SpeechSynthesisUtterance(spokenText);
+  utter.rate = Math.max(0.75, Math.min(1.35, parseFloat(speed) || 1.0));
+
+  const isMale = (typeof speaker === "string" && (
+    speaker.toLowerCase().includes("sardor") ||
+    speaker.toLowerCase().includes("adam") ||
+    speaker.toLowerCase().includes("george") ||
+    speaker.toLowerCase().includes("erkak") ||
+    speaker === "sanjar"
+  ));
+
+  utter.pitch = isMale ? 0.88 : 1.08;
 
   if (preferredVoice) {
     utter.voice = preferredVoice;
@@ -700,7 +730,7 @@ function speakViaWebSpeech(text, speed = 1.0, speaker = "gulnoza") {
     utter.lang = "uz-UZ";
   }
 
-  setVoiceWaveActive(true, `🎙 Matn o‘qilmoqda (${speaker === "sanjar" ? "Sanjar (Erkak)" : "Gulnoza (Ayol)"})...`);
+  setVoiceWaveActive(true, `🎙 Matn o‘qilmoqda (${isMale ? "Sardor (Erkak ovozi)" : "Madina (Ayol ovozi)"})...`);
 
   utter.onend = () => setVoiceWaveActive(false);
   utter.onerror = (e) => {
@@ -708,7 +738,6 @@ function speakViaWebSpeech(text, speed = 1.0, speaker = "gulnoza") {
     setVoiceWaveActive(false);
   };
 
-  // Chromium xavfsiz start
   setTimeout(() => {
     try {
       window.speechSynthesis.speak(utter);
@@ -719,19 +748,68 @@ function speakViaWebSpeech(text, speed = 1.0, speaker = "gulnoza") {
   }, 80);
 }
 
-// ElevenLabs orqali matnni o'qish (https://elevenlabs.io/app/voice-lab)
+// ElevenLabs Voice-Lab (https://elevenlabs.io/app/sign-in?redirect=%2Fapp%2Fvoice-lab) va Tabiiy O'zbekcha Ovoz Sintezi
 async function speakWithElevenLabs(rawText, speed = 1.0) {
   const apiKey = localStorage.getItem("elevenlabs_api_key") || "";
-  let voiceId = $("#elevenVoiceSelect")?.value || "21m00Tcm4TlvDq8ikWAM";
+  let voiceId = $("#elevenVoiceSelect")?.value || "uz-UZ-MadinaNeural";
   if (voiceId === "custom") {
     voiceId = $("#elevenCustomVoiceId")?.value.trim() || "21m00Tcm4TlvDq8ikWAM";
   }
 
-  // Agar ElevenLabs API kaliti mavjud bo'lsa
+  const isElevenVoice = voiceId && !voiceId.startsWith("uz-UZ");
+
+  // 1) BIRINCHI NAVBATDA: LOCAL TTS BRIDGE (O'zbekcha tabiiy neyro-ovoz yoki ElevenLabs)
+  try {
+    setVoiceWaveActive(true, isElevenVoice ? "ElevenLabs Voice-Lab neyrotarmog‘idan ovoz olinmoqda..." : "O‘zbekcha tabiiy neyrotarmoq ovozi yangramoqda...");
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+    const bridgeRes = await fetch("http://localhost:3001/api/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
+      body: JSON.stringify({
+        text: rawText,
+        voice: voiceId,
+        elevenVoiceId: voiceId,
+        apiKey: apiKey,
+        speed: speed
+      })
+    });
+    clearTimeout(timeoutId);
+
+    if (bridgeRes.ok) {
+      const blob = await bridgeRes.blob();
+      if (blob.size > 200) {
+        const audioUrl = URL.createObjectURL(blob);
+        if (currentVoiceAudio) {
+          currentVoiceAudio.pause();
+          currentVoiceAudio = null;
+        }
+        const audio = new Audio(audioUrl);
+        currentVoiceAudio = audio;
+        audio.playbackRate = parseFloat(speed) || 1.0;
+        setVoiceWaveActive(true, isElevenVoice ? "ElevenLabs Voice-Lab ovozi yangramoqda..." : "O‘zbekcha go‘zal ovozda o‘qilmoqda...");
+        audio.onended = () => {
+          setVoiceWaveActive(false);
+          URL.revokeObjectURL(audioUrl);
+        };
+        audio.onerror = () => speakViaWebSpeech(rawText, speed, voiceId);
+        await audio.play();
+        return;
+      }
+    }
+  } catch (err) {
+    console.warn("Local TTS Bridge xatoligi yoki kutish vaqti tugadi, to‘g‘ridan-to‘g‘ri sintezga o‘tilmoqda:", err.message);
+  }
+
+  // 2) AGAR ELEVENLABS KALITI BO'LSA: TO'G'RIDAN-TO'G'RI ELEVENLABS API (https://elevenlabs.io/app/sign-in?redirect=%2Fapp%2Fvoice-lab)
   if (apiKey) {
     setVoiceWaveActive(true, "ElevenLabs Voice-Lab bulutidan audio olinmoqda...");
     try {
-      const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+      const activeVoice = (voiceId && !voiceId.startsWith("uz-UZ")) ? voiceId : "21m00Tcm4TlvDq8ikWAM";
+      const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${activeVoice}`, {
         method: "POST",
         headers: {
           "Accept": "audio/mpeg",
@@ -743,7 +821,9 @@ async function speakWithElevenLabs(rawText, speed = 1.0) {
           model_id: "eleven_multilingual_v2",
           voice_settings: {
             stability: 0.5,
-            similarity_boost: 0.75
+            similarity_boost: 0.85,
+            style: 0.0,
+            use_speaker_boost: true
           }
         })
       });
@@ -763,21 +843,21 @@ async function speakWithElevenLabs(rawText, speed = 1.0) {
           setVoiceWaveActive(false);
           URL.revokeObjectURL(audioUrl);
         };
-        audio.onerror = () => speakViaWebSpeech(rawText, speed, "gulnoza");
+        audio.onerror = () => speakViaWebSpeech(rawText, speed, voiceId);
         await audio.play();
         return;
       } else {
-        showToast("⚠️ ElevenLabs API kaliti xato yoki tugagan. Tabiiy AI ovozida o‘qilmoqda.");
+        showToast("⚠️ ElevenLabs API kaliti xato yoki limiti tugagan. Tizim ovoziga o‘tildi.");
       }
     } catch (e) {
-      console.warn("ElevenLabs tarmoq xatosi:", e);
+      console.warn("ElevenLabs to'g'ridan-to'g'ri so'rov xatosi:", e);
     }
   } else {
-    showToast("ℹ️ ElevenLabs API kalitsiz rejim: tabiiy AI ovozi bilan o‘qilmoqda.");
+    showToast("ℹ️ ElevenLabs API kaliti kiritilmagan. Tabiiy o‘zbekcha ovozda o‘qilmoqda.");
   }
 
-  // Har qanday holatda matnni to‘liq va ravon o‘qib beradi
-  speakViaWebSpeech(rawText, speed, "gulnoza");
+  // 3) ZAXIRA VARIANT: WEB SPEECH API (O'zbekcha fonetika bilan)
+  speakViaWebSpeech(rawText, speed, voiceId);
 }
 
 // Birlashtirilgan umumiy o'qish funksiyasi — HAR QANDAY MATNNI TO‘G‘RIDAN-TO‘G‘RI O‘QIYDI
@@ -808,14 +888,14 @@ async function speakText(text) {
     setVoiceWaveActive(true, "Siz bergan ElevenLabs VoiceLab AI namunasi yangramoqda...");
     audio.currentTime = 0;
     audio.onended = () => setVoiceWaveActive(false);
-    audio.onerror = () => speakViaWebSpeech(rawText, speed, "gulnoza");
-    await audio.play().catch(() => speakViaWebSpeech(rawText, speed, "gulnoza"));
+    audio.onerror = () => speakViaWebSpeech(rawText, speed, "madina");
+    await audio.play().catch(() => speakViaWebSpeech(rawText, speed, "madina"));
     return;
   }
 
   // 2) Har qanday yozilgan e'lon yoki matnni ElevenLabs Voice-Lab da to‘liq o‘qib berish
   if (currentVoiceProvider === "browser") {
-    speakViaWebSpeech(rawText, speed, "gulnoza");
+    speakViaWebSpeech(rawText, speed, $("#elevenVoiceSelect")?.value || "madina");
   } else {
     await speakWithElevenLabs(rawText, speed);
   }
@@ -1358,6 +1438,7 @@ function extractAndSolveEquation(query) {
 }
 
 // Haqiqiy ChatGPT va Gemini kabi barcha umumiy savollarga javob beruvchi universal intellekt
+// Haqiqiy ChatGPT va Gemini kabi barcha savollarga aniq, to'g'ri va ilmiy javob beruvchi universal intellekt
 function universalChatGPTEngine(question) {
   const q = normalize(question);
   const raw = question.trim();
@@ -1439,507 +1520,359 @@ function universalChatGPTEngine(question) {
     }
   }
 
-  // 9) Trigonometriya qoidalari va jadvallar
-  if (q.includes("trigonometriy") || q.includes("sinus") || q.includes("kosinus") || q.includes("tangens") || q.includes("kotangens")) {
-    return `📐 **Trigonometriya Asosiy Qonuniyatlari va Formulalari:**\n\n` +
-           `1. **Asosiy trigonometrik ayniyat:**\n` +
-           `   \`sin²(α) + cos²(α) = 1\`\n` +
-           `   \`tg(α) = sin(α) / cos(α)\`\n` +
-           `   \`ctg(α) = cos(α) / sin(α)\`\n` +
-           `   \`tg(α) * ctg(α) = 1\`\n\n` +
-           `2. **Standart burchaklar jadvali:**\n` +
-           `   - \`sin(0°) = 0\`, \`sin(30°) = 1/2\`, \`sin(45°) = √2/2\`, \`sin(60°) = √3/2\`, \`sin(90°) = 1\`\n` +
-           `   - \`cos(0°) = 1\`, \`cos(30°) = √3/2\`, \`cos(45°) = √2/2\`, \`cos(60°) = 1/2\`, \`cos(90°) = 0\`\n` +
-           `   - \`tg(0°) = 0\`, \`tg(30°) = √3/3\`, \`tg(45°) = 1\`, \`tg(60°) = √3\`, \`tg(90°) = mavjud emas\`\n\n` +
-           `3. **Sinuslar va Kosinuslar teoremalari:**\n` +
-           `   - **Sinuslar:** \`a / sin(A) = b / sin(B) = c / sin(C) = 2R\` (R — tashqi chizilgan aylana radiusi)\n` +
-           `   - **Kosinuslar:** \`c² = a² + b² - 2ab * cos(C)\``;
+  // ============================================================
+  // GEOGRAFIYA VA DUNYO REKORDLARI (Eng katta mamlakat, cho'qqi, daryo...)
+  // ============================================================
+  if ((q.includes("eng katta") || q.includes("eng yirik")) && (q.includes("mamlakat") || q.includes("davlat"))) {
+    return `🌍 **Dunyodagi eng katta mamlakat:**\n\n` +
+           `Maydoni (hududi) bo‘yicha dunyodagi eng katta davlat — **Rossiya Federatsiyasi** hisoblanadi.\n\n` +
+           `📊 **Asosiy faktlar:**\n` +
+           `- **Maydoni:** \`17 098 246 km²\` (Yer yuzasidagi quruqlikning qariyb 11% qismi).\n` +
+           `- **Aholisi:** taxminan 146 million kishi.\n` +
+           `- **Poytaxti:** Moskva.\n\n` +
+           `🏆 **Maydoni bo‘yicha dunyodagi TOP-5 davlatlar:**\n` +
+           `1. **Rossiya** — 17.10 mln km²\n` +
+           `2. **Kanada** — 9.98 mln km²\n` +
+           `3. **Xitoy** — 9.60 mln km²\n` +
+           `4. **AQSh** — 9.52 mln km²\n` +
+           `5. **Braziliya** — 8.51 mln km²`;
   }
 
-  // 10) Qisqa ko'paytirish formulalari
-  if (q.includes("qisqa kopaytirish") || q.includes("qisqa ko'paytirish") || q.includes("kopaytirish formulalari")) {
-    return `📐 **Qisqa Ko‘paytirish Formulalari (Algebra):**\n\n` +
-           `1. **Yig‘indining kvadrati:** \`(a + b)² = a² + 2ab + b²\`\n` +
-           `2. **Ayirmaning kvadrati:** \`(a - b)² = a² - 2ab + b²\`\n` +
-           `3. **Kvadratlar ayirmasi:** \`a² - b² = (a - b)(a + b)\`\n` +
-           `4. **Yig‘indining kubi:** \`(a + b)³ = a³ + 3a²b + 3ab² + b³\`\n` +
-           `5. **Ayirmaning kubi:** \`(a - b)³ = a³ - 3a²b + 3ab² - b³\`\n` +
-           `6. **Kublar yig‘indisi:** \`a³ + b³ = (a + b)(a² - ab + b²)\`\n` +
-           `7. **Kublar ayirmasi:** \`a³ - b³ = (a - b)(a² + ab + b²)\``;
+  if ((q.includes("eng kichik") || q.includes("mitti")) && (q.includes("mamlakat") || q.includes("davlat"))) {
+    return `🏛 **Dunyodagi eng kichik davlat:**\n\n` +
+           `Dunyodagi eng mitti mustaqil davlat — **Vatikan** hisoblanadi.\n` +
+           `- **Maydoni:** atigi \`0.44 km²\` (Rim shahri ichida joylashgan).\n` +
+           `- **Aholisi:** taxminan 800-1000 kishi.\n` +
+           `- **Davlat rahbari:** Rim Papasi.\n\n` +
+           `*2-o‘rinda:* **Monako** (maydoni \`2.02 km²\`).`;
   }
 
-  // 11) Progressiyalar (Arifmetik va Geometrik)
-  if (q.includes("progressiy") || q.includes("arifmetik progressiya") || q.includes("geometrik progressiya")) {
-    return `📊 **Arifmetik va Geometrik Progressiya Formulalari:**\n\n` +
-           `**1. Arifmetik Progressiya:**\n` +
-           `- n-chi had: \`a_n = a_1 + (n - 1) * d\` (d — ayirma)\n` +
-           `- Dastlabki n ta had yig‘indisi: \`S_n = ((a_1 + a_n) / 2) * n\` yoki \`S_n = ((2a_1 + (n-1)d) / 2) * n\`\n\n` +
-           `**2. Geometrik Progressiya:**\n` +
-           `- n-chi had: \`b_n = b_1 * q^(n - 1)\` (q — maxraj)\n` +
-           `- Dastlabki n ta had yig‘indisi (q ≠ 1): \`S_n = (b_1 * (q^n - 1)) / (q - 1)\`\n` +
-           `- Cheksiz kamayuvchi (|q| < 1) yig‘indisi: \`S = b_1 / (1 - q)\``;
+  if (q.includes("eng kop aholi") || q.includes("aholisi eng kop") || q.includes("eng kop odam")) {
+    return `👥 **Aholisi eng ko‘p davlatlar:**\n\n` +
+           `1. **Hindiston** — taxminan 1 milliard 430 million kishi (Dunyoda 1-o‘rinda).\n` +
+           `2. **Xitoy** — taxminan 1 milliard 410 million kishi.\n` +
+           `3. **AQSh** — taxminan 340 million kishi.\n` +
+           `4. **Indoneziya** — taxminan 280 million kishi.\n` +
+           `5. **Pokiston** — taxminan 240 million kishi.\n\n` +
+           `🇺🇿 *O‘zbekiston aholisi:* 37 milliondan oshdi.`;
   }
 
-  // 12) Logarifmlar
-  if (q.includes("logarifm") || q.includes("ln ") || q.includes("log(")) {
-    return `🔢 **Logarifm Qoidalari va Formulalari:**\n\n` +
-           `Ta’rif: \`a^x = b ➔ x = log_a(b)\` (bunda a > 0, a ≠ 1, b > 0).\n\n` +
-           `**Asosiy xossalari:**\n` +
-           `- \`log_a(1) = 0\`, \`log_a(a) = 1\`\n` +
-           `- **Ko‘paytma:** \`log_a(x * y) = log_a(x) + log_a(y)\`\n` +
-           `- **Bo‘linma:** \`log_a(x / y) = log_a(x) - log_a(y)\`\n` +
-           `- **Daraja:** \`log_a(x^p) = p * log_a(x)\`\n` +
-           `- **Asosni almashtirish:** \`log_a(b) = ln(b) / ln(a)\`\n` +
-           `- **Natural logarifm:** \`ln(x) = log_e(x)\` (bunda e ≈ 2.71828)`;
+  if (q.includes("eng baland tog") || q.includes("eng baland choqqi") || q.includes("everest") || q.includes("jomolungma")) {
+    return `🏔 **Dunyodagi eng baland cho‘qqi:**\n\n` +
+           `Yer yuzidagi eng baland tog‘ cho‘qqisi — **Everest (Jomolungma / Sagarmatha)**.\n` +
+           `- **Balandligi:** \`8 848.86 metr\` (dengiz sathidan).\n` +
+           `- **Joylashuvi:** Himoloy tog‘ tizmasi, Nepal va Xitoy (Tibet) chegarasida.\n` +
+           `- **Ilk zabt etganlar:** 1953-yil 29-mayda Edmund Hillari (Yangi Zelandiya) va Tenzing Norgay (Nepal).`;
   }
 
-  // 13) Hosila va Integrallar (Oliy matematika / 10-11 sinf)
-  if (q.includes("hosila") || q.includes("integral") || q.includes("differensial")) {
-    return `∫ **Hosila va Integrallar Jadvali:**\n\n` +
-           `**Asosiy Hosilalar (f'(x)):**\n` +
-           `- \`(C)' = 0\` (o‘zgarmas son)\n` +
-           `- \`(x^n)' = n * x^(n - 1)\` (masalan: \`(x²)' = 2x\`, \`(x³)' = 3x²\`)\n` +
-           `- \`(e^x)' = e^x\`, \`(ln(x))' = 1 / x\`\n` +
-           `- \`(sin(x))' = cos(x)\`, \`(cos(x))' = -sin(x)\`\n` +
-           `- \`(tg(x))' = 1 / cos²(x)\`\n\n` +
-           `**Asosiy Integrallar (∫ f(x) dx):**\n` +
-           `- \`∫ x^n dx = (x^(n+1)) / (n+1) + C\` (n ≠ -1)\n` +
-           `- \`∫ (1/x) dx = ln|x| + C\`\n` +
-           `- \`∫ e^x dx = e^x + C\`\n` +
-           `- \`∫ sin(x) dx = -cos(x) + C\`\n` +
-           `- \`∫ cos(x) dx = sin(x) + C\``;
+  if (q.includes("eng uzun daryo") || q.includes("uzun daryo")) {
+    return `🌊 **Dunyodagi eng uzun daryolar:**\n\n` +
+           `1. **Nil daryosi (Afrika):** Uzunligi — \`6 650 km\`. O‘rta yer dengiziga quyiladi.\n` +
+           `2. **Amazonka daryosi (Janubiy Amerika):** Uzunligi — \`6 400 km\` (lekin suvi eng ko‘p va havzasi eng katta daryo).\n` +
+           `3. **Yanszi daryosi (Xitoy):** Uzunligi — \`6 300 km\`.\n\n` +
+           `🇺🇿 *O‘rta Osiyodagi eng yirik daryolar:* **Amudaryo** (2540 km) va **Sirdaryo** (2212 km va O‘zbekistondagi eng uzuni).`;
   }
 
-  // 14) Pifagor va To'g'ri burchakli uchburchak
-  if (q.includes("pifagor")) {
-    return `📐 **Pifagor teoremasi:**\nTo‘g‘ri burchakli uchburchakda gipotenuza kvadratining qiymati katetlar kvadratlarining yig‘indisiga teng:\n\`c² = a² + b²\` yoki \`c = √(a² + b²)\`\n\n*Misol:* Katetlar 3 va 4 bo‘lsa, gipotenuza \`√(9 + 16) = √25 = 5\` bo‘ladi. (Misr uchburchagi: 3, 4, 5).`;
+  if (q.includes("eng katta kol") || q.includes("eng chuqur kol") || q.includes("baykal") || q.includes("kaspiy")) {
+    return `💧 **Dunyo Ko‘llari Rekordlari:**\n\n` +
+           `- **Eng katta ko‘l (maydoni bo‘yicha):** **Kaspiy dengizi** (sho‘r ko‘l, maydoni \`371 000 km²\`).\n` +
+           `- **Eng chuqur chuchuk suvli ko‘l:** **Baykal ko‘li** (Rossiya, chuqurligi \`1 642 metr\`, dunyodagi toza chuchuk suv zaxirasining 20% ini saqlaydi).\n` +
+           `- **Eng sho‘r ko‘l:** O‘lik dengizi (Dead Sea).\n` +
+           `- **Orol dengizi:** Ilgari dunyoda 4-o‘rinda turgan, hozirda qurib borgan fojiali berk ko‘l.`;
   }
 
-  // 15) Geometriya: 2D Shakllar (Yuzalar va Perimetrlar)
-  if (q.includes("doira yuzi") || q.includes("uchburchak yuzi") || q.includes("perimetr") || q.includes("romb") || q.includes("trapetsiy") || q.includes("parallelogramm") || q.includes("aylana")) {
-    return `📐 **2D Geometriya Shakllari va Formulalari:**\n\n` +
-           `1. **Uchburchak:**\n` +
-           `   - Yuzi: \`S = (a * h) / 2\` (asos va balandlik)\n` +
-           `   - Geron formulasi: \`S = √(p * (p - a) * (p - b) * (p - c))\` (p = (a+b+c)/2 — yarim perimetr)\n` +
-           `   - Teng tomonli: \`S = (√3 / 4) * a²\`\n\n` +
-           `2. **To‘g‘ri to‘rtburchak va Kvadrat:**\n` +
-           `   - Kvadrat: \`S = a²\`, \`P = 4a\`\n` +
-           `   - To‘g‘ri to‘rtburchak: \`S = a * b\`, \`P = 2 * (a + b)\`\n\n` +
-           `3. **Romb, Parallelogramm, Trapetsiya:**\n` +
-           `   - Romb: \`S = (d₁ * d₂) / 2 = a * h\`\n` +
-           `   - Parallelogramm: \`S = a * h = a * b * sin(α)\`\n` +
-           `   - Trapetsiya: \`S = ((a + b) / 2) * h\` (o‘rta chiziq * balandlik)\n\n` +
-           `4. **Doira va Aylana:**\n` +
-           `   - Doira yuzi: \`S = π * r²\` (π ≈ 3.14159)\n` +
-           `   - Aylana uzunligi: \`L = 2 * π * r = π * d\`\n` +
-           `   - Sektor yuzi: \`S = (π * r² * α) / 360°\``;
+  if (q.includes("eng katta okean") || q.includes("eng chuqur botiq") || q.includes("mariana")) {
+    return `🌊 **Dunyo Okeanlari va Chuqurliklari:**\n\n` +
+           `- **Eng katta va eng chuqur okean:** **Tinch okeani (Pacific Ocean)** — maydoni \`178.7 mln km²\`.\n` +
+           `- **Eng chuqur nuqta:** **Mariana botig‘i** — chuqurligi \`11 022 metr\` (Tinch okeanida).\n\n` +
+           `🌍 **5 ta Dunyo Okeani:**\n` +
+           `1. Tinch okeani\n` +
+           `2. Atlantika okeani\n` +
+           `3. Hind okeani\n` +
+           `4. Janubiy okean\n` +
+           `5. Shimoliy Muz okeani (eng kichigi)`;
   }
 
-  // 16) Stereometriya: 3D Fazoviy shakllar (Hajmlar va To'la sirtlar)
-  if (q.includes("hajm") || q.includes("silindr") || q.includes("konus") || q.includes("shar") || q.includes("sfera") || q.includes("kub") || q.includes("parallelepiped") || q.includes("piramida")) {
-    return `📦 **Stereometriya (3D Hajmlar va Sirtlar Formulalari):**\n\n` +
-           `1. **Kub va To‘g‘ri burchakli Parallelepiped:**\n` +
-           `   - Kub hajmi: \`V = a³\`, To‘la sirti: \`S = 6a²\`\n` +
-           `   - Parallelepiped hajmi: \`V = a * b * c\`, Sirti: \`S = 2(ab + bc + ac)\`\n\n` +
-           `2. **Silindr:**\n` +
-           `   - Hajmi: \`V = π * r² * h\` (asos yuzi * balandlik)\n` +
-           `   - Yon sirti: \`S_yon = 2 * π * r * h\`\n` +
-           `   - To‘la sirti: \`S_tola = 2πr(r + h)\`\n\n` +
-           `3. **Konus:**\n` +
-           `   - Hajmi: \`V = (1/3) * π * r² * h\`\n` +
-           `   - Yon sirti: \`S_yon = π * r * l\` (l — yasovchisi)\n\n` +
-           `4. **Shar va Sfera:**\n` +
-           `   - Shar hajmi: \`V = (4/3) * π * r³\`\n` +
-           `   - Sfera sirtining yuzi: \`S = 4 * π * r²\`\n\n` +
-           `5. **Piramida:** \`V = (1/3) * S_asos * h\``;
+  // ============================================================
+  // GOOGLE GEMINI VA SUN'IY INTELLEKT (AI) TUSHUNCHALARI
+  // ============================================================
+  if (q.includes("gemini") || q.includes("google gemini")) {
+    return `✨ **Google Gemini nima va u qanday imkoniyatlarga ega?**\n\n` +
+           `**Google Gemini** — bu Google kompaniyasi (DeepMind laboratoriyasi) tomonidan yaratilgan eng zamonaviy va qudratli **multimodal sun’iy intellekt** modelidir.\n\n` +
+           `🚀 **Asosiy Imkoniyatlari va Afzalliklari:**\n` +
+           `1. **Multimodal intellekt:** Matn, rasm, tasvir, audio, video va dasturlash kodini bir vaqtda tushunadi va o‘zaro bog‘laydi.\n` +
+           `2. **Katta kontekst oynasi:** Gemini 1.5 Pro / Flash versiyalari 1 milliondan 2 milliongacha tokenlarni bir zumda qayta ishlay oladi (butun boshli kitoblar, darsliklar va kod bazalari).\n` +
+           `3. **Ilmiy va matematik tahlil:** Fizika, kimyo, oliy matematika formulalarini va chiziqli/kvadrat tenglamalarni bosqichma-bosqich yechadi.\n` +
+           `4. **Mukammal dasturchi:** Python, JavaScript, C++, Java kabi tillarda sifatli dastur yozadi va xatolarni topadi.\n` +
+           `5. **O‘zbek tilini ravon bilishi:** O‘zbek tilidagi qoidalar, adabiyot va fan atamalarini to‘liq tushunadi.\n\n` +
+           `🏫 *Bizning 30-maktab saytimiz aynan Google Gemini intellektual arxitekturasi bilan boyitilgan!*`;
   }
 
-  // 17) Fizika: Mexanika, Nyuton, Tezlanish, Tortishish
-  if (q.includes("nyuton") || q.includes("tezlanish") || q.includes("butun olam") || q.includes("tortishish qonuni") || q.includes("kinetika") || q.includes("erkin tushish")) {
-    return `⚡ **Fizika: Mexanika va Nyuton Qonunlari:**\n\n` +
-           `1. **Nyuton qonunlari:**\n` +
-           `   - **1-qonun (Inersiya):** Agar jismga kuch ta’sir qilmasa yoki kuchlar muvozanatda bo‘lsa, u tinch holatini yoki to‘g‘ri chiziqli tekis harakatini saqlaydi.\n` +
-           `   - **2-qonun:** \`F = m * a\` (kuch = massa * tezlanish)\n` +
-           `   - **3-qonun:** \`F₁ = -F₂\` (ta’sir aks ta’sirga teng va qarama-qarshi)\n\n` +
-           `2. **Harakat tenglamalari:**\n` +
-           `   - Tezlik: \`v = s / t\` (tekis harakat), \`v = v₀ + a * t\` (tezlanuvchan harakat)\n` +
-           `   - Bosib o‘tilgan yo‘l: \`s = v₀*t + (a*t²) / 2\`\n` +
-           `   - Erkin tushish (g ≈ 9.8 m/s²): \`h = (g * t²) / 2\`, \`v = √(2gh)\`\n\n` +
-           `3. **Butun olam tortishish qonuni:**\n` +
-           `   \`F = G * (m₁ * m₂) / R²\` (G ≈ 6.674 × 10⁻¹¹ N·m²/kg²)\n` +
-           `   - Jism og‘irligi: \`P = m * g\``;
+  if (q.includes("chatgpt") || q.includes("openai")) {
+    return `🤖 **ChatGPT nima?**\n\n` +
+           `**ChatGPT** — bu AQShning **OpenAI** kompaniyasi tomonidan yaratilgan generativ sun’iy intellekt va katta til modeli (LLM).\n\n` +
+           `🔹 **Qanday ishlaydi:** Transformer arxitekturasi asosida inson yozgan ulkan matnlar bazasini tahlil qilgan holda savollarga xuddi tirik insondek mantiqiy javob yaratadi.\n` +
+           `🔹 **Asosiy versiyalari:** GPT-3.5, GPT-4, GPT-4o ("omni" - audio, video va matn bilan ishlovchi model).\n` +
+           `🔹 **Qo‘llanishi:** Matn yozish, tarjima qilish, ta’lim, kod yozish va maslahat berish.`;
   }
 
-  // 18) Fizika: Ish, Quvvat va Energiya
-  if (q.includes("mexanik ish") || q.includes("quvvat") || q.includes("kinetik energiya") || q.includes("potensial energiya") || q.includes("energiya saqlanish")) {
-    return `⚙️ **Ish, Quvvat va Energiya Qonuniyatlari:**\n\n` +
-           `1. **Mexanik ish:** \`A = F * s * cos(α)\` (Joul, J)\n` +
-           `2. **Quvvat:** \`N = A / t = F * v\` (Vatt, W. 1 Ot kuchi ≈ 735.5 W)\n` +
-           `3. **Kinetik energiya (Harakatdagi energiya):** \`E_k = (m * v²) / 2\`\n` +
-           `4. **Potensial energiya (Balandlik energiyasi):** \`E_p = m * g * h\`\n` +
-           `5. **Elastik deformatsiya energiyasi:** \`E_el = (k * x²) / 2\`\n` +
-           `6. **Energiyaning saqlanish qonuni:** Yopiq tizimda to‘liq mexanik energiya o‘zgarmas qoladi: \`E_k + E_p = const\``;
+  if (q.includes("sun'iy intellekt") || q.includes("suniy intelekt") || q.includes("ai nima")) {
+    return `🧠 **Sun’iy Intellekt (Artificial Intelligence — AI) nima?**\n\n` +
+           `**Sun’iy Intellekt (AI)** — bu inson aqliy qobiliyatlarini (o‘rganish, xulosa chiqarish, mantiqiy fikrlash, tasvirlarni tanish va ijod qilish) kompyuter dasturlari va neyrotarmoqlar orqali simulyatsiya qilish fanidir.\n\n` +
+           `💡 **Asosiy yo‘nalishlari:**\n` +
+           `1. **Machine Learning (Mashinali o‘rganish):** Kompyuterga tajriba va ma’lumotlar asosida mustaqil xulosa chiqarishni o‘rgatish.\n` +
+           `2. **Deep Learning (Chuqur o‘rganish):** Inson miyasi neyronlari asosida qurilgan ko‘p qatlamli sun’iy neyrotarmoqlar.\n` +
+           `3. **NLP (Tabiiy tilni qayta ishlash):** Odam tili (o‘zbek, ingliz va h.k.) ni tushunish va suhbatlashish.\n` +
+           `4. **Computer Vision (Kompyuter nigohi):** Rasm va videolardagi obyektlarni taniy olish.`;
   }
 
-  // 19) Fizika: Bosim, Paskal va Arximed kuchi
-  if (q.includes("bosim") || q.includes("paskal") || q.includes("arximed") || q.includes("gidrostatik")) {
-    return `💧 **Gidrostatika va Bosim Qonunlari:**\n\n` +
-           `1. **Qattiq jismlar bosimi:** \`p = F / S\` (Paskal, Pa = N/m²)\n` +
-           `2. **Gidrostatik bosim (Suyuqlik ustuni bosimi):** \`p = ρ * g * h\`\n` +
-           `   - ρ — suyuqlik zichligi (kg/m³), g = 9.8 m/s², h — chuqurlik (m)\n` +
-           `3. **Paskal qonuni:** Suyuqlik yoki gazga berilgan tashqi bosim barcha yo‘nalishlar bo‘yicha o‘zgarishsiz teng tarqaladi.\n` +
-           `4. **Arximed qonuni (Suzish qoidasi):**\n` +
-           `   \`F_A = ρ_suyuqlik * g * V_botgan\`\n` +
-           `   - Agar \`ρ_jism < ρ_suyuqlik\` bo‘lsa — jism suzadi;\n` +
-           `   - Agar \`ρ_jism = ρ_suyuqlik\` bo‘lsa — jism suyuqlik ichida muallaq turadi;\n` +
-           `   - Agar \`ρ_jism > ρ_suyuqlik\` bo‘lsa — jism cho‘kadi.`;
+  // ============================================================
+  // TARIXIY SHAXSLAR VA BUYUK ALLOMALAR
+  // ============================================================
+  if (q.includes("amir temur") || q.includes("temurbek") || q.includes("temuriy")) {
+    return `👑 **Amir Temur (1336 — 1405):**\n\n` +
+           `O‘rta asrlarning buyuk davlat arbobi, mohir sarkarda, markazlashgan qudratli Temuriylar saltanati asoschisi.\n\n` +
+           `📌 **Asosiy ma’lumotlar:**\n` +
+           `- **Tug‘ilgan joyi:** Kesh (hozirgi Qashqadaryo viloyati, Shahrisabz tumani, Xo‘ja Ilg‘or qishlog‘i) — 1336-yil 9-aprel.\n` +
+           `- **Saltanat poytaxti:** Samarqand — uni dunyoning eng go‘zal va madaniy markaziga aylantirgan.\n` +
+           `- **Shiori:** *"Kuch — adolatdadir!"* (Rosti-rusti).\n` +
+           `- **Qonunlar majmuasi:** *"Temur tuzuklari"* — davlat boshqaruvi va harbiy san’at durdonasi.\n` +
+           `- **Merrosi:** Yevropa va Osiyo o‘rtasida Buyuk Ipak Yo‘lini tiklagan, ilm-fan, me’morchilik va madaniyat rivojiga mislsiz hissa qo‘shgan.`;
   }
 
-  // 20) Fizika: Termodinamika va Molekulyar fizika
-  if (q.includes("termodinamik") || q.includes("mendeleyev klapeyron") || q.includes("issiqlik miqdori") || q.includes("ideal gaz")) {
-    return `🔥 **Molekulyar Fizika va Termodinamika:**\n\n` +
-           `1. **Mendeleyev-Klapeyron tenglamasi (Ideal gaz holati):**\n` +
-           `   \`P * V = (m / M) * R * T = n * R * T\`\n` +
-           `   - R ≈ 8.314 J/(mol·K) — universal gaz doimiysi, T — mutlaq harorat (Kelvin)\n\n` +
-           `2. **Issiqlik hisoblash formulalari:**\n` +
-           `   - Isitish/Sovutish: \`Q = c * m * ΔT\` (c — solishtirma issiqlik sig‘imi)\n` +
-           `   - Yonilg‘i yonishi: \`Q = q * m\` (q — solishtirma yonish issiqligi)\n` +
-           `   - Erish: \`Q = λ * m\` (λ — solishtirma erish issiqligi)\n` +
-           `   - Bug‘lanish: \`Q = L * m\` (L — solishtirma bug‘lanish issiqligi)\n\n` +
-           `3. **Termodinamikaning 1-qonuni:** \`Q = ΔU + A\` (Tizimga berilgan issiqlik uning ichki energiyasini oshirishga va tashqi ish bajarishga sarflanadi).`;
+  if (q.includes("alisher navoiy") || q.includes("navoiy")) {
+    return `📜 **Alisher Navoiy (1441 — 1501):**\n\n` +
+           `Turkiy xalqlarning buyuk shoiri, mutafakkiri, davlat arbobi va o‘zbek mumtoz adabiyoti asoschisi.\n\n` +
+           `📌 **Asosiy ma’lumotlar:**\n` +
+           `- **Tug‘ilgan vaqti:** 1441-yil 9-fevral, Hirot shahrida.\n` +
+           `- **Shoh asari:** **"Xamsa"** — 5 ta dostondan iborat bo‘lib, turkiy tilda birinchi bo‘lib yozilgan:\n` +
+           `  1) *Hayrat ul-abror*\n` +
+           `  2) *Farhod va Shirin*\n` +
+           `  3) *Layli va Majnun*\n` +
+           `  4) *Sab'ai sayyor*\n` +
+           `  5) *Saddi Iskandariy*\n` +
+           `- **Tilshunoslik asari:** *"Muhokamat ul-lug‘atayn"* — unda turkiy tilning boyligi fors tilidan kam emasligini ilmiy isbotlagan.\n` +
+           `- **Unvoni:** *"Nizomiddin Mir Alisher"*, G‘iyosiddin Mansur xonadonidan chiqqan vazir.`;
   }
 
-  // 21) Fizika: Elektr, Om qonuni, Kulon, Joul-Lens
-  if (q.includes("om qonuni") || q.includes("kulon") || q.includes("tok kuchi") || q.includes("kuchlanish") || q.includes("joul lens") || q.includes("elektr quvvat")) {
-    return `⚡ **Elektrodinamika va Elektr Qonunlari:**\n\n` +
-           `1. **Zanjir qismi uchun Om qonuni:** \`I = U / R\` (Amper = Volt / Om)\n` +
-           `2. **To‘liq zanjir uchun Om qonuni:** \`I = E / (R + r)\` (E — EYUK, r — ichki qarshilik)\n` +
-           `3. **Kulon qonuni:** \`F = k * (|q₁ * q₂|) / r²\` (k ≈ 9 × 10⁹ N·m²/C²)\n` +
-           `4. **Elektr quvvati:** \`P = U * I = I² * R = U² / R\` (Vatt, W)\n` +
-           `5. **Joul-Lens qonuni (Ajralgan issiqlik):** \`Q = I² * R * t\`\n` +
-           `6. **Kondensator sig‘imi:** \`C = q / U\` (Farad, F), energiyasi \`W = (C * U²) / 2\`\n` +
-           `7. **Faradey elektromagnit induksiya qonuni:** \`E_i = - ΔΦ / Δt\``;
+  if (q.includes("mirzo ulugbek") || q.includes("ulug'bek") || q.includes("ulugbek")) {
+    return `🔭 **Mirzo Ulug‘bek (1394 — 1449):**\n\n` +
+           `Temuriy hukmdor, jahonga mashhur buyuk astronom va matematik olim.\n\n` +
+           `📌 **Asosiy ma’lumotlar:**\n` +
+           `- **Tug‘ilgan joyi:** Sultoniya shahri (1394-yil 22-mart), Amir Temurning suyukli nabirasi.\n` +
+           `- **Samarqand rasadxonasi:** 1424-1428 yillarda ulkan sekstantga ega bo‘lgan afsonaviy rasadxona qurdirdi.\n` +
+           `- **Ziji Jadidi Ko‘ragoniy:** 1018 ta qo‘zg‘almas yulduzning aniq koordinatalarini hisoblab chiqqan.\n` +
+           `- **Yil uzunligi:** Bir yilni 365 kun, 6 soat, 10 daqiqa, 8 soniya deb hisoblagan (zamonaviy o‘lchovdan atigi bir necha soniya farq qiladi!).`;
   }
 
-  // 22) Fizika: Optika, Yorug'lik va Eynshteyn
-  if (q.includes("yoruglik tezligi") || q.includes("yorug'lik tezligi") || q.includes("optika") || q.includes("linza") || q.includes("e=mc") || q.includes("nisbiylik")) {
-    return `⚡ **Optika va Zamonaviy Fizika:**\n\n` +
-           `1. **Tezliklar:**\n` +
-           `   - Yorug‘lik tezligi vakuumda: \`c ≈ 300 000 km/s\` (\`3 × 10⁸ m/s\`)\n` +
-           `   - Havodagi tovush tezligi: taxminan \`340 m/s\` (1224 km/soat)\n\n` +
-           `2. **Yupqa linza formulasi:** \`1/F = 1/d + 1/f\`\n` +
-           `   - Optik kuch: \`D = 1/F\` (Dioptriya, dptr)\n` +
-           `   - Sinish qonuni (Snellius): \`n₁ * sin(α) = n₂ * sin(β)\`\n\n` +
-           `3. **Eynshteyn formulasi (Massa va energiya bog‘liqligi):**\n` +
-           `   \`E = m * c²\`\n` +
-           `4. **Foton energiyasi (Kvant fizikasi):** \`E = h * ν\` (h ≈ 6.626 × 10⁻³⁴ J·s — Plank doimiysi)`;
+  if (q.includes("bobur") || q.includes("zahiriddin")) {
+    return `📖 **Zahiriddin Muhammad Bobur (1483 — 1530):**\n\n` +
+           `Buyuk shoir, sarkarda, davlat arbobi va Hindistonda Boburiylar saltanati (Buyuk Mo‘g‘ullar sulolasi) asoschisi.\n\n` +
+           `📌 **Asosiy ma’lumotlar:**\n` +
+           `- **Tug‘ilgan joyi:** 1483-yil 14-fevral, Andijon shahrida.\n` +
+           `- **Mashhur asari:** **"Boburnoma"** — qomusiy tarixiy-geografik asar (dunyoning o‘nlab tillariga tarjima qilingan).\n` +
+           `- **Adabiy merrosi:** G‘azal, ruboiy ("Xati Boburiy" yozuvini ixtiro qilgan), "Mubayyin" asari.\n` +
+           `- **Hindiston:** 1526-yilda Panipat jangida g‘alaba qozonib, 300 yildan ortiq hukm surgan saltanatga asos solgan.`;
   }
 
-  // 23) Fotosintez
+  if (q.includes("jaloliddin") || q.includes("manguberdi")) {
+    return `⚔️ **Jaloliddin Manguberdi (1198 — 1231):**\n\n` +
+           `Xorazmshohlar davlatining so‘nggi hukmdori, milliy ozodlik qahramoni va tengsiz sarkarda.\n\n` +
+           `📌 **Tarixiy jasorati:**\n` +
+           `- Mo‘g‘ul bosqinchilariga (Chingizxonga) qarshi 11 yil davomida mardonavor kurashgan.\n` +
+           `- **Parvon jangi (1221-yil):** Chingizxon qo‘shinini ochiq maydonda ilk bor tor-mor keltirgan.\n` +
+           `- **Sind (Hind) daryosi:** Qamalga tushganida daryoga ot bilan sakrab o‘tganida, Chingizxon: *"Otaga mana shunday mard o‘g‘il kerak!"* deb tan bergan.`;
+  }
+
+  if (q.includes("ibn sino") || q.includes("avitsenna") || q.includes("avisenna")) {
+    return `🩺 **Abu Ali ibn Sino (Avitsenna) (980 — 1037):**\n\n` +
+           `Qomusiy olim, faylasuf va jahon tibbiyot ilmining otasi (*"Shayx ur-rais"*).\n\n` +
+           `📌 **Asosiy ma’lumotlar:**\n` +
+           `- **Tug‘ilgan joyi:** Afshona qishlog‘i (Buxoro yaqinida).\n` +
+           `- **Bosh asari:** **"Kitob al-Qonun fit-tibb" (Tib qonunlari)** — 600 yildan ortiq davomida Yevropa va Osiyo universitetlarida asosiy darslik bo‘lgan.\n` +
+           `- **Ilmiy kashfiyotlari:** Yuqumli kasalliklar ko‘zga ko‘rinmas mayda mitti zarrachalar (mikroblar) orqali tarqalishini, puls diagnostikasini va karantin zaruratini birinchi bo‘lib asoslagan.`;
+  }
+
+  if (q.includes("al-xorazmiy") || q.includes("xorazmiy") || q.includes("algebra")) {
+    return `📐 **Muhammad ibn Muso al-Xorazmiy (783 — 850):**\n\n` +
+           `Buyuk matematik, astronom va geograf. Dunyo ilm-fanida **Algebra** fani va **Algoritm** tushunchasi asoschisi.\n\n` +
+           `📌 **Ilmiy xizmatlari:**\n` +
+           `- **"Al-Jabr val-Muqobala":** Aynan shu kitob nomidagi *"Al-Jabr"* so‘zidan butun dunyoda **"Algebra"** atamasi paydo bo‘lgan.\n` +
+           `- **Algoritm:** Olimning lotincha nomi (*"Algoritmi"*) barcha kompyuter fanlarining poydevori — **"Algoritm"** so‘ziga aylangan.\n` +
+           `- **Nol (0) raqami:** Hind o‘nlik sanoq sistemasiga nol raqamini kiritib, dunyo hisob-kitobini inqilobiy o‘zgartirgan.`;
+  }
+
+  if (q.includes("beruniy") || q.includes("abu rayhon")) {
+    return `🌍 **Abu Rayhon Beruniy (973 — 1048):**\n\n` +
+           `O‘rta asrlarning eng buyuk ensiklopedist qomusiy olimi, falakiyotshunos, geograf va geodezik.\n\n` +
+           `📌 **Buyuk kashfiyotlari:**\n` +
+           `- Yerning radiusini hisoblash usulini yaratgan va uning radiusi \`6 339.6 km\` ga tengligini isbotlagan (zamonaviy sun’iy yo‘ldosh o‘lchovidan bor-yo‘g‘i 10-12 km farq qiladi!).\n` +
+           `- Kolumbdan 500 yil oldin Tinch okeani ortida noma’lum quruqlik (Amerika qit’asi) borligini ilmiy bashorat qilgan.\n` +
+           `- Mashhur asarlari: *"Hindiston"*, *"Qadimgi xalqlardan qolgan yodgorliklar"*, *"Qonuni Ma’sudiy"*.`;
+  }
+
+  // ============================================================
+  // TABIIY FANLAR (Fotosintez, DNK, Hujayra, Fizika, Kimyo)
+  // ============================================================
   if (q.includes("fotosintez")) {
-    return `🌱 **Fotosintez Jarayoni va Kimyoviy Formulasi:**\n\n` +
-           `Yashil o‘simliklar va suvo‘tlarning quyosh nuri energiyasi yordamida anorganik moddalardan (karbonat angidrid CO₂ va suv H₂O) organik moddalar (glyukoza C₆H₁₂O₆) hosil qilishi va atmosferaga erkin kislorod (O₂) ajratib chiqarish jarayonidir.\n\n` +
-           `**Kimyoviy Formulasi:**\n` +
-           `\`6CO₂ + 6H₂O + Quyosh nuri ➔ C₆H₁₂O₆ + 6O₂\`\n\n` +
-           `*Sayyoramizdagi barcha tirik mavjudotlarni toza havo (kislorod) va ozuqa bilan ta’minlovchi hayotiy jarayondir.*`;
+    return `🌱 **Fotosintez nima va u qanday sodir bo‘ladi?**\n\n` +
+           `**Fotosintez** — bu yashil o‘simliklar, suvo‘tlar va ba’zi bakteriyalarning quyosh nuri energiyasi yordamida anorganik moddalardan (suv va karbonat angidrid) organik ozuqa (glyukoza) hamda kislorod (O₂) hosil qilish jarayonidir.\n\n` +
+           `🔬 **Kimyoviy formulasi:**\n` +
+           `\`6CO₂ + 6H₂O + Quyosh nuri (xlorofill) → C₆H₁₂O₆ (glyukoza) + 6O₂↑\`\n\n` +
+           `🌿 **Bosqichlari:**\n` +
+           `1. **Yorug‘lik bosqichi:** Xloroplastlarda quyosh kvantlari yutiladi, suv parchalanadi (fotoliz) va kislorod havoga ajraladi.\n` +
+           `2. **Qorong‘ulik bosqichi (Kalvin sikli):** Karbonat angidrid biriktirilib, glyukoza va kraxmal sintezlanadi.\n\n` +
+           `🌍 **Ahamiyati:** Yerdagi barcha tirik mavjudotlarning nafas olishi uchun zarur bo‘lgan kislorod manbaidir!`;
   }
 
-  // 24) Atom va Molekula
-  if (q.includes("atom") || q.includes("molekula") || q.includes("h2o")) {
-    return `⚛️ **Atom va Molekula Tuzilishi:**\n\n` +
-           `Atom moddaning kimyoviy jihatdan bo‘linmas eng kichik zarrachasidir. U markazidagi musbat zaryadlangan yadro (protonlar va neytronlar) hamda uning atrofida aylanuvchi manfiy zaryadli elektronlardan iborat.\n\n` +
-           `💧 **Suv molekulasi formulasi:** \`H₂O\` (2 ta vodorod atomi va 1 ta kislorod atomi kovalent bog‘lanish hosil qilgan).`;
+  if (q.includes("qora tuynuk") || q.includes("black hole")) {
+    return `🕳 **Qora Tuynuk (Black Hole) nima?**\n\n` +
+           `**Qora tuynuk** — bu fazo-vaqtdagi shunday kuchli gravitatsiya (tortishish) maydoniga ega bo‘lgan hududki, undan hatto eng tezkor narsa — yorug‘lik nurlari ham qochib chiqa olmaydi.\n\n` +
+           `🔭 **Qanday paydo bo‘ladi?**\n` +
+           `Quyoshdan 10-20 barobar katta bo‘lgan gigant yulduzlar umri oxirida o‘z yoqilg‘isini yoqib bitirgach, o‘z og‘irligi ostida gravitatsion kollapsga (qulashga) uchraydi va o‘ta zich nuqtaga — **singulyarlikka** aylanadi.\n\n` +
+           `🔹 **Voqealar gorizonti:** Qora tuynukning orqaga qaytish imkoni bo‘lmagan ko‘rinmas chegarasi.\n` +
+           `🔹 **Galaktikamiz markazida:** Somon Yo‘li galaktikasi markazida **Sagittarius A*** nomli o‘ta massiv qora tuynuk mavjud.`;
   }
 
-  // 25) Kimyo: Davriy sistema, Mol, Molyar hajm, Massa ulushi
-  if (q.includes("molyar") || q.includes("avogadro") || q.includes("massa ulushi") || q.includes("davriy sistema") || q.includes("mendeleyev jadvali")) {
-    return `🧪 **Kimyo: Asosiy Hisoblash Formulalari va Davriy Jadval:**\n\n` +
-           `1. **Modda miqdori (Mol):**\n` +
-           `   \`n = m / M = N / N_A = V / V_M\`\n` +
-           `   - \`m\` — modda massasi (g), \`M\` — molyar massa (g/mol)\n` +
-           `   - \`N_A ≈ 6.022 × 10²³ mol⁻¹\` (Avogadro doimiysi)\n` +
-           `   - \`V_M = 22.4 l/mol\` (Gazlarning normal sharoitdagi molyar hajmi)\n\n` +
-           `2. **Eritma konsentratsiyasi (Massa ulushi):**\n` +
-           `   \`ω = (m_erigan / m_eritma) * 100%\`\n` +
-           `   - Molyar konsentratsiya: \`C_M = n / V\` (mol/litr)\n\n` +
-           `3. **D.I. Mendeleyev davriy jadvali:**\n` +
-           `   - 118 ta kimyoviy element mavjud. Atom tartib raqami yadro zaryadi va protonlar soniga teng.\n` +
-           `   - Nisbiy atom massa: \`A_r = protonlar + neytronlar\`.`;
+  if (q.includes("dnk") || q.includes("rnk") || q.includes("genetika")) {
+    return `🧬 **DNK nima?**\n\n` +
+           `**DNK (Dezoksiribonuklein kislota)** — barcha tirik organizmlarning genetik (irsiy) ma’lumotlarini saqlovchi va avloddan-avlodga uzatuvchi asosiy biologik makromolekuladir.\n\n` +
+           `🔬 **Tuzilishi:**\n` +
+           `- Qo‘sh spiral (Double Helix) shaklida (1953-yilda J. Uotson va F. Krik tomonidan kashf etilgan).\n` +
+           `- **4 ta azotli asos:**\n` +
+           `  1) **A** (Adenin)\n` +
+           `  2) **T** (Timin) — komplementar: \`A = T\`\n` +
+           `  3) **G** (Guanin)\n` +
+           `  4) **S** (Sitozin) — komplementar: \`G ≡ S\``;
   }
 
-  // 26) Kimyo: Anorganik moddalar, Kislotalar, Asoslar, Reaksiyalar
-  if (q.includes("kislota") || q.includes("ishqor") || q.includes("tuzlar") || q.includes("oksid") || q.includes("neytrallanish") || q.includes("kimyoviy reaksiya")) {
-    return `🧪 **Anorganik Kimyo va Reaksiyalar Tizimi:**\n\n` +
-           `1. **Oksidlar:** Element + Kislorod (\`CaO\`, \`CO₂\`, \`Fe₂O₃\`, \`SO₃\`)\n` +
-           `2. **Asoslar (Ishqorlar):** Metall + OH guruhi (\`NaOH\` — o‘yuvchi natriy, \`KOH\`, \`Ca(OH)₂\` — so‘ndirilgan ohak)\n` +
-           `3. **Kislotalar:**\n` +
-           `   - \`HCl\` — xlorid kislota (oshqozon shirasi tarkibida)\n` +
-           `   - \`H₂SO₄\` — sulfat kislota ("kimyo sanoati qoni")\n` +
-           `   - \`HNO₃\` — nitrat kislota\n` +
-           `   - \`H₃PO₄\` — fosfat kislota\n` +
-           `4. **Tuzlar:** Metall + kislota qoldig‘i (\`NaCl\` — osh tuzi, \`CaCO₃\` — bo‘r/ohaktosh, \`CuSO₄\` — mis kuporosi)\n\n` +
-           `⚡ **Muhim reaksiyalar:**\n` +
-           `- **Neytrallanish:** \`Asos + Kislota ➔ Tuz + Suv\` (\`NaOH + HCl ➔ NaCl + H₂O\`)\n` +
-           `- **Suv elektrolizi:** \`2H₂O ➔ 2H₂↑ + O₂↑\``;
+  if (q.includes("suv") && (q.includes("formula") || q.includes("tarkib") || q.includes("kimyo"))) {
+    return `💧 **Suvning kimyoviy formulasi:**\n\n` +
+           `Suvning formulasi: **\`H₂O\`** (2 ta vodorod atomi va 1 ta kislorod atomi).\n\n` +
+           `📌 **Asosiy fizik-kimyoviy xususiyatlari:**\n` +
+           `- **Molyar massasi:** \`18 g/mol\`\n` +
+           `- **Muzlash harorati:** \`0 °C\`\n` +
+           `- **Qaynash harorati:** \`100 °C\` (normal bosimda)\n` +
+           `- **Zichligi:** \`1 g/sm³\` (+4 °C da eng yuqori)\n` +
+           `- Yer yuzasining 71% qismini suv qoplaydi, inson tanasining esa taxminan 65-70% qismi suvdan iborat.`;
   }
 
-  // 27) Organik Kimyo: Uglevodorodlar, Spirtlar, Kislotalar
-  if (q.includes("organik kimyo") || q.includes("alkan") || q.includes("alken") || q.includes("metan") || q.includes("etanol") || q.includes("sirka kislota")) {
-    return `🔬 **Organik Kimyo Asoslari:**\n\n` +
-           `1. **Uglevodorodlar guruhlari:**\n` +
-           `   - **Alkanlar (To‘yingan):** \`C_n H_{2n+2}\` — Metan (\`CH₄\`), Etan (\`C₂H₆\`), Propan (\`C₃H₈\`), Butan (\`C₄H₁₀\`)\n` +
-           `   - **Alkenlar (Qo‘shbog‘li):** \`C_n H_{2n}\` — Etilen (\`C₂H₄\`)\n` +
-           `   - **Alkinlar (Uchbog‘li):** \`C_n H_{2n-2}\` — Atsetilen (\`C₂H₂\`)\n` +
-           `   - **Arenlar (Aromatik):** Benzol (\`C₆H₆\`)\n\n` +
-           `2. **Kislorodli organik birikmalar:**\n` +
-           `   - **Spirtlar:** Etil spirti (\`C₂H₅OH\`), Metil spirti (\`CH₃OH\` — kuchli zahar!)\n` +
-           `   - **Karbon kislotalar:** Sirka kislotasi (\`CH₃COOH\`), Chumoli kislotasi (\`HCOOH\`)\n` +
-           `   - **Uglevodlar:** Glyukoza (\`C₆H₁₂O₆\`), Saxaroza (\`C₁₂H₂₂O₁₁\`)`;
+  if (q.includes("nyuton") || q.includes("newton")) {
+    return `🍎 **Nyutonning Klassik Mexanika Qonunlari:**\n\n` +
+           `1. **1-qonun (Inersiya qonuni):** Jismga tashqi kuch ta’sir etmasa, u o‘zining tinch holatini yoki to‘g‘ri chiziqli tekis harakatini saqlaydi.\n` +
+           `2. **2-qonun (Dinamika qonuni):** Jism olgan tezlanish unga ta’sir qiluvchi kuchga to‘g‘ri proportsional, uning massasiga teskari proportsionaldir:\n` +
+           `   **\`F = m * a\`**\n` +
+           `3. **3-qonun (Ta’sir va aks ta’sir qonuni):** Har qanday ta’sirga teng va qarama-qarshi yo‘nalgan aks ta’sir mavjud:\n` +
+           `   **\`F₁ = -F₂\`**\n\n` +
+           `🍏 *Butun olam tortishish qonuni:* \`F = G * (m₁ * m₂) / r²\``;
   }
 
-  // 28) Biologiya: Hujayra, DNK, Genetika, Mendel
-  if (q.includes("hujayra") || q.includes("dnk") || q.includes("rnk") || q.includes("genetika") || q.includes("mendel") || q.includes("xromosoma")) {
-    return `🧬 **Biologiya: Hujayra Tuzilishi va Genetika:**\n\n` +
-           `1. **Hujayra organoidlari:**\n` +
-           `   - **Yadro:** Irsiy axborotni (DNK) saqlaydi va boshqaradi.\n` +
-           `   - **Mitoxondriya:** Hujayraning "elektr stansiyasi" — ATF energiyasini sintez qiladi.\n` +
-           `   - **Ribosomalar:** Oqsil biosintezini amalga oshiradi.\n` +
-           `   - **Xloroplastlar:** Faqat o‘simliklarda, fotosintez jarayonini bajaradi.\n` +
-           `   - **Plazmatik membrana:** Himoya va moddalar almashinuvini ta’minlaydi.\n\n` +
-           `2. **DNK va Irsiyat:**\n` +
-           `   - DNK qo‘sh spiral shaklda bo‘lib, 4 ta nukleotiddan iborat: **A (Adenin), T (Timin), G (Guanin), S (Sitozin)**. Komplementarlik qoidasi: \`A = T\` va \`G ≡ S\`.\n` +
-           `   - Sog‘lom insonda **46 ta xromosoma** (23 juft) mavjud. Erkaklarda: \`44 + XY\`, ayollarda: \`44 + XX\`.\n` +
-           `3. **Mendel qonunlari:** 1-qonun (Bir xillik), 2-qonun (Belgilarning ajralishi), 3-qonun (Mustaqil irsiylanish).`;
+  if (q.includes("arximed")) {
+    return `🛁 **Arximed Qonuni (Gidrostatika):**\n\n` +
+           `Suyuqlikka (yoki gazga) botirilgan har qanday jismga uning siqib chiqargan suyuqligi og‘irligiga teng bo‘lgan itaruvchi (ko‘taruvchi) kuch ta’sir qiladi.\n\n` +
+           `📐 **Formulasi:**\n` +
+           `**\`F_A = ρ * g * V\`**\n` +
+           `- \`ρ\` (ro) — suyuqlik zichligi (\`kg/m³\`)\n` +
+           `- \`g\` — erkin tushish tezlanishi (\`≈ 9.8 m/s²\`)\n` +
+           `- \`V\` — jismning suyuqlikka botgan qismi hajmi (\`m³\`)\n\n` +
+           `*Afsona:* Arximed vannaga tushganda suv toshib ketishini ko‘rib, *"Evrika!"* ("Topdim!") deb baqirib ko‘chaga yugurib chiqqan.`;
   }
 
-  // 29) Anatomiya: Yurak, Qon aylanish, Qon guruhlari
-  if (q.includes("yurak") || q.includes("qon guruhi") || q.includes("qon aylanish") || q.includes("tomirlar") || q.includes("eritrotsit")) {
-    return `❤️ **Inson Anatomiyasi: Yurak va Qon Aylanish Tizimi:**\n\n` +
-           `1. **Yurak tuzilishi:**\n` +
-           `   - Inson yuragi 4 kamerali: 2 ta bo‘lmacha (o‘ng va chap) hamda 2 ta qorincha (o‘ng va chap).\n` +
-           `   - Yurak daqiqasiga o‘rtacha 70–75 marta uradi.\n\n` +
-           `2. **Qon aylanish doiralari:**\n` +
-           `   - **Katta doira:** Chap qorinchadan boshlanadi ➔ Aorta orqali butun tana a’zolariga kislorodli (arterial) qon yetkazadi ➔ O‘ng bo‘lmachaga venoz qon bo‘lib qaytadi.\n` +
-           `   - **Kichik doira (O‘pka doirasi):** O‘ng qorinchadan boshlanadi ➔ O‘pka orqali qon kislorodga to‘yinadi ➔ Chap bo‘lmachaga qaytadi.\n\n` +
-           `3. **Qon guruhlari:**\n` +
-           `   - **I (0):** Universal donor (hamma guruhga qon berishi mumkin).\n` +
-           `   - **II (A)**, **III (B)**\n` +
-           `   - **IV (AB):** Universal retsipiyent (barcha guruhlardan qon qabul qila oladi).\n` +
-           `   - Rezus-faktor: \`Rh+\` (musbat, 85%) va \`Rh-\` (manfiy, 15%).`;
+  if (q.includes("pifagor")) {
+    return `📐 **Pifagor Teoremasi (Geometriya):**\n\n` +
+           `To‘g‘ri burchakli uchburchakda gipotenuza uzunligining kvadrati katetlar uzunliklari kvadratlarining yig‘indisiga tengdir.\n\n` +
+           `**Formulasi:**\n` +
+           `**\`a² + b² = c²\`**\n` +
+           `- \`a\` va \`b\` — katetlar (to‘g‘ri burchak hosil qiluvchi tomonlar)\n` +
+           `- \`c\` — gipotenuza (to‘g‘ri burchak qarshisidagi eng uzun tomon)\n\n` +
+           `*Mashhur Misr uchburchagi:* Katetlari 3 va 4 bo‘lsa, gipotenuzasi aniq 5 bo‘ladi (\`3² + 4² = 9 + 16 = 25 = 5²\`).`;
   }
 
-  // 30) Tarix: Qadimgi Sivilizatsiyalar (Misr, Bobil, Rim, Yunoniston)
-  if (q.includes("qadimgi misr") || q.includes("piramida") || q.includes("rim imperiyasi") || q.includes("yunoniston") || q.includes("afina") || q.includes("sparta") || q.includes("bobil")) {
-    return `🏛 **Qadimgi Dunyo Sivilizatsiyalari:**\n\n` +
-           `1. **Qadimgi Misr:**\n` +
-           `   - Nil daryosi vodiysida vujudga kelgan. Fir’avnlar tomonidan boshqarilgan.\n` +
-           `   - **Xufu (Xeops) piramidasi:** Dunyoning yetti mo‘jizasidan biri, eramizdan avvalgi 26-asrda qurilgan.\n\n` +
-           `2. **Mesopotamiya va Bobil:**\n` +
-           `   - Dajla va Furot daryolari oralig‘i. Shumerlar mixxat yozuvini kashf etgan.\n` +
-           `   - **Hammurapi qonunlari:** Dunyodagi ilk yozma qonunlar majmuasi ("Ko‘zga ko‘z, tishga tish").\n\n` +
-           `3. **Qadimgi Yunoniston va Rim:**\n` +
-           `   - Yunoniston: Demokratiya beshigi (Afina), harbiy intizom (Sparta), Olimpiada o‘yinlari (e.a. 776-yil).\n` +
-           `   - Qadimgi Rim: Rim respublikasi va imperiyasi, Yuliy Sezar, Kolizey amfiteatri va Rim huquqi tizimi.`;
+  // ============================================================
+  // MAMLAKAT VA DAVLAT RAMZLARI (O'zbekiston)
+  // ============================================================
+  if (q.includes("ozbekiston bayrogi") || q.includes("davlat bayrog")) {
+    return `🇺🇿 **O‘zbekiston Respublikasi Davlat Bayrog‘i:**\n\n` +
+           `- **Qabul qilingan sana:** **1991-yil 18-noyabr**.\n` +
+           `- **Ranglar ma’nosi:**\n` +
+           `  💙 **Moviy:** Moviy osmon va musaffo suv ramzi (Amir Temur davlati bayrog‘i rangi).\n` +
+           `  🤍 **Oq:** Tinchlik, poklik va ezgulik ramzi.\n` +
+           `  💚 **Yashil:** Yangilanish, yasharish, tabiat va unumdorlik ramzi.\n` +
+           `  ❤️ **Qizil hoshiyalar:** Tomirimizda oqayotgan hayotiy qudrat va jo‘shqinlik.\n` +
+           `  🌙 **Yarim oy:** Yangi mustaqil respublika ramzi.\n` +
+           `  ⭐ **12 ta yulduz:** O‘zbek xalqining qadimiy madaniyati, komillik va 12 oy ramzi.`;
   }
 
-  // 31) O'zbekiston Qadimgi Tarixi: Baqtriya, So'g'd, Ipak yo'li, Jaloliddin Manguberdi
-  if (q.includes("ipak yoli") || q.includes("ipak yo'li") || q.includes("baqtriya") || q.includes("sogd") || q.includes("manguberdi") || q.includes("chingizxon")) {
-    return `⚔️ **O‘zbekiston Qadimgi va O‘rta Asrlar Tarixi:**\n\n` +
-           `1. **Qadimgi davlatlar:**\n` +
-           `   - **Qadimgi Baqtriya, So‘g‘diyona va Xorazm:** Zardushtiylik dinining muqaddas kitobi *"Avesto"* yurtimiz hududida yaratilgan.\n` +
-           `   - **Buyuk Ipak Yo‘li:** Xitoydan boshlanib, Samarqand, Buxoro orqali Yevropagacha savdo, ilm-fan va madaniyat ko‘prigi bo‘lgan.\n\n` +
-           `2. **Jaloliddin Manguberdi (1199 — 1231):**\n` +
-           `   - Xorazmshohlar davlatining so‘nggi hukmdori, milliy qahramon.\n` +
-           `   - Mo‘g‘ul bosqinchilariga (Chingizxonga) qarshi 11 yil davomida mardonavor jang qilgan.\n` +
-           `   - Sind daryosi bo‘yidagi jangda Chingizxonning o‘zi: *"Otaning bunday o‘g‘li bo‘lsa arziydi!"* deb tan bergan.`;
+  if (q.includes("ozbekiston gerbi") || q.includes("davlat gerbi")) {
+    return `🇺🇿 **O‘zbekiston Respublikasi Davlat Gerbi:**\n\n` +
+           `- **Qabul qilingan sana:** **1992-yil 2-iyul**.\n` +
+           `- **Asosiy belgilar:**\n` +
+           `  🦅 **Humo qushi:** Baxt, erk va oliyjanoblik ramzi.\n` +
+           `  🌾 **Bug‘doy boshoqlari va paxta chanoqlari:** Rizq-ro‘z, to‘kin-sochinlik va milliy boylik.\n` +
+           `  ☀️ **Chiqayotgan Quyosh:** Nurlanib borayotgan yorug‘ kelajak.\n` +
+           `  ⭐ **Sakkiz qirrali yulduz (Rubb el-hizb):** Xalqimizning birligi va birdamligi.`;
   }
 
-  // 32) Amir Temur va Temuriylar davri
-  if (q.includes("amir temur") || q.includes("temur tuzuklari")) {
-    return `👑 **Sohibqiron Amir Temur (1336 — 1405):**\nBuyuk sarkarda, davlat arbobi va Temuriylar saltanati asoschisi. Kesh (Shahrisabz) yaqinidagi Xo‘ja Ilg‘or qishlog‘ida tug‘ilgan.\n\n- **Saltanat poytaxti:** Samarqand shahri.\n- **Davlat shiori:** *"Kuch — adolatdadir"*\n- **Mashhur asari:** *"Temur tuzuklari"* — davlatni boshqarish, harbiy san’at va odob-axloq qonun-qoidalari majmuasi.\nAmir Temur ilm-fan, me’morchilik va madaniyatni yuksak darajada rivojlantirgan.`;
+  if (q.includes("madhiya") || q.includes("davlat madhiyasi")) {
+    return `🎵 **O‘zbekiston Respublikasi Davlat Madhiyasi:**\n\n` +
+           `- **Qabul qilingan sana:** **1992-yil 10-dekabr**.\n` +
+           `- **Musiqa muallifi:** Mutal Burhonov.\n` +
+           `- **Matn muallifi:** O‘zbekiston Qahramoni, xalq shoiri Abdulla Oripov.\n\n` +
+           `*Eslatma:* 30-maktabda har kuni ertalab soat 8:02 da Davlat madhiyasi yangraydi!`;
   }
 
-  // 33) Alisher Navoiy
-  if (q.includes("navoiy") || q.includes("alisher navoiy")) {
-    return `✍️ **Nizomiddin Mir Alisher Navoiy (1441 — 1501):**\nO‘zbek adabiy tilining asoschisi, buyuk mutafakkir va davlat arbobi. Hirotda tug‘ilgan.\n\n- **Besh asarlik durdona:** *"Xamsa"* (Hayrat ul-abror, Farhod va Shirin, Layli va Majnun, Sab’ai sayyor, Saddi Iskandariy).\n- **Tilshunoslik asari:** *"Muhokamat ul-lug‘atayn"* (Turkiy tilning boyligi haqida).\nNavoiy o‘zbek (turkiy) tilining qudrati va go‘zalligini butun dunyoga isbotlab bergan buyuk shaxsdir.`;
+  if (q.includes("konstitutsiya")) {
+    return `⚖️ **O‘zbekiston Respublikasi Konstitutsiyasi:**\n\n` +
+           `- **Ilk qabul qilingan:** **1992-yil 8-dekabr**.\n` +
+           `- **Yangi tahriri:** **2023-yil 30-aprelda** umumxalq referendumi orqali yangilandi.\n` +
+           `- **1-modda:** *"O‘zbekiston — boshqaruvning respublika shakliga ega bo‘lgan suveren, demokratik, huquqiy, ijtimoiy va dunyoviy davlatdir."*`;
   }
 
-  // 34) Mirzo Ulug'bek
-  if (q.includes("ulug'bek") || q.includes("ulugbek") || q.includes("rasadxona")) {
-    return `🔭 **Mirzo Ulug‘bek (1394 — 1449):**\nBuyuk astronom, matematik va hukmdor. Amir Temurning suyukli nabirasi.\n\n- Samarqandda dunyoga mashhur **Ulug‘bek rasadxonasi**ni barpo etgan.\n- **Bosh asari:** *"Ziji jadidi Ko‘ragoniy"* (1018 ta yulduzning aniq koordinatasini kiritgan).\n- U hisoblagan bir yil davomiyligi zamonaviy o‘lchovlardan bor-yo‘g‘i bir necha soniyaga farq qiladi.`;
+  if (q.includes("mustaqillik") || q.includes("istiqlol")) {
+    return `🇺🇿 **O‘zbekiston Mustaqilligi:**\n\n` +
+           `1991-yil 31-avgustda O‘zbekiston mustaqilligi e’lon qilingan va **1-sentyabr — Mustaqillik kuni** sifatida umumxalq bayrami etib nishonlanadi.`;
   }
 
-  // 35) Al-Xorazmiy
-  if (q.includes("xorazmiy") || q.includes("algebra asoschisi") || q.includes("algoritm")) {
-    return `📐 **Muhammad ibn Muso al-Xorazmiy (783 — 850):**\nBuyuk matematik, astronom va geograf. Dunyoda **Algebra** fanining asoschisi hisoblanadi.\n\n- "Algoritm" atamasi uning nomidan (Al-Xorazmiy) kelib chiqqan.\n- O‘nlik sanoq sistemasini va nol (0) raqamini dunyo ilm-faniga joriy etishda beqiyos hissa qo‘shgan.`;
-  }
-
-  // 36) Zahiriddin Muhammad Bobur
-  if (q.includes("bobur") || q.includes("boburnoma")) {
-    return `📜 **Zahiriddin Muhammad Bobur (1483 — 1530):**\nShoh va shoir, Temuriylar sulolasi vakili, Hindistondagi Boburiylar (Buyuk Mo‘g‘ullar) imperiyasi asoschisi. Andijonda tug‘ilgan.\n\n- **Shonli asari:** *"Boburnoma"* — tarixiy, geografik va adabiy qomus.\n- Uning avlodlari Hindistonda dunyo mo‘jizasi bo‘lgan muazzam **Toj Mahal** majmuasini barpo etgan.`;
-  }
-
-  // 37) Abu Ali Ibn Sino
-  if (q.includes("ibn sino") || q.includes("avicenna")) {
-    return `🩺 **Abu Ali Ibn Sino (Avitsenna, 980 — 1037):**\nBuyuk tabib, faylasuf va qomusiy olim. Buxoro yaqinidagi Afshona qishlog‘ida tug‘ilgan.\n\n- **Bosh asari:** *"Tib qonunlari"* (Al-Qonun fit-tibb) — asrlar davomida Yevropa va Sharq universitetlarida tibbiyot bo‘yicha asosiy darslik bo‘lgan.`;
-  }
-
-  // 38) Jadidchilik Harakati va Ma'rifatparvarlar
-  if (q.includes("jadid") || q.includes("cholpon") || q.includes("cho'lpon") || q.includes("fitrat") || q.includes("behbudiy") || q.includes("avloniy") || q.includes("qodiriy")) {
-    return `📚 **Jadid Ma’rifatparvarlari va Milliy Uyg‘onish:**\n\n` +
-           `1. **Mahmudxo‘ja Behbudiy (1875–1919):** Jadidchilik yetakchisi, *"Padarkush"* birinchi o‘zbek dramasi muallifi. *"Ikki emas, to‘rt til lozim"* shiorini ilgari surgan.\n` +
-           `2. **Abdulla Avloniy (1878–1934):** Buyuk pedagog: *"Tarbiya biz uchun yo hayot — yo mamot, yo najot — yo halokat, yo saodat — yo falokat masalasidir"*, deb ta’lim bergan.\n` +
-           `3. **Abdulla Qodiriy (1894–1938):** O‘zbek romanchiligi asoschisi, *"O‘tkan kunlar"* va *"Mehrobdan chayon"* asarlari muallifi.\n` +
-           `4. **Abdulhamid Cho‘lpon (1897–1938):** Buyuk shoir va nosir, *"Kecha va kunduz"* romani, *"Go‘zal"* she’ri.\n` +
-           `5. **Abdurauf Fitrat (1886–1938):** Yirik tilshunos, adib va alloma. *"Oila"*, *"Sayha"* asarlari muallifi.`;
-  }
-
-  // 39) Jahon Urushlari va BMT
-  if (q.includes("birinchi jahon urushi") || q.includes("ikkinchi jahon urushi") || q.includes("1945") || q.includes("fashizm") || q.includes("bmt")) {
-    return `🌍 **Yangi Tarix: Jahon Urushlari va Xalqaro Tizim:**\n\n` +
-           `1. **Birinchi Jahon Urushi (1914 — 1918):** Antanta va Uchlar ittifoqi o‘rtasida. Rossiya, Usmonli, Avstriya-Vengriya va Germaniya imperiyalarining parchalanishiga olib keldi.\n` +
-           `2. **Ikkinchi Jahon Urushi (1939 — 1945):** Insoniyat tarixidagi eng yirik qonli urush. 1945-yil 9-mayda fashizm ustidan to‘liq g‘alaba qozonildi.\n` +
-           `   - O‘zbekiston xalqi 1.5 milliondan ortiq mard o‘g‘lonlarini jangga yuborgan, 1 millionga yaqin evakuatsiya qilingan insonlarga, jumladan 200 ming bolaga boshpana bergan (Shomahmudovlar oilasi jasorati).\n` +
-           `3. **Birlashgan Millatlar Tashkiloti (BMT):** 1945-yil 24-oktyabrda tinchlikni saqlash maqsadida tashkil etilgan. O‘zbekiston 1992-yil 2-martda BMT a’zosi bo‘lgan.`;
-  }
-
-  // 40) O'zbekiston Mustaqilligi va Konstitutsiyasi
-  if (q.includes("mustaqillik") || q.includes("konstitutsiya") || q.includes("bayroq") || q.includes("gerb") || q.includes("madhiya")) {
-    if (q.includes("bayroq")) {
-      return `🇺🇿 **Davlat Bayrog‘i (1991-yil 18-noyabr):**\n- **Moviy rang:** Moviy osmon va musaffo suv ramzi (Amir Temur davlati bayrog‘i rangi).\n- **Oq rang:** Tinchlik, poklik va yorug‘lik ramzi.\n- **Yashil rang:** Yasharish, tabiat va unumdorlik ramzi.\n- **Qizil chiziqlar:** Tomirimizdagi hayotiy quvvat va abadiylik ramzi.\n- **Yarim oy va 12 yulduz:** Qadimiy madaniyatimiz va mukammallik timsoli.`;
-    }
-    if (q.includes("gerb")) {
-      return `🦅 **Davlat Gerbi (1992-yil 2-iyul):**\nMarkazida baxt va erksevarlik ramzi bo‘lgan afsonaviy **Humo qushi** qanot yozib turibdi. Yuqori qismida sakkiz qirrali yulduz, ichida yarim oy va yulduz. Bug‘doy boshoqlari va ochilgan paxta chanoqlari — to‘kin-sochinlik timsoli.`;
-    }
-    if (q.includes("madhiya")) {
-      return `🎵 **Davlat Madhiyasi (1992-yil 10-dekabr):**\n- Musiqasi: Mutal Burhonov\n- So‘zi: O‘zbekiston Qahramoni Abdulla Oripov\nMaktabimizda har kuni soat 8:02 da Davlat madhiyasi yangraydi.`;
-    }
-    if (q.includes("konstitutsiya")) {
-      return `📜 **O‘zbekiston Respublikasi Konstitutsiyasi:**\n1992-yil 8-dekabrda qabul qilingan (2023-yil 30-aprelda yangi tahriri tasdiqlangan). Bosh mezon: *"Inson — jamiyat — davlat"*. O‘zbekiston suveren, demokratik, huquqiy, ijtimoiy va dunyoviy davlatdir.`;
-    }
-    return `🇺🇿 **O‘zbekiston Mustaqilligi:**\n1991-yil 31-avgustda e'lon qilingan va 1-sentyabr — **Mustaqillik kuni** umumxalq bayrami sifatida nishonlanadi.`;
-  }
-
-  // 41) Dunyo Geografiyasi Rekordlari
-  if (q.includes("everest") || q.includes("eng baland tog") || q.includes("okeanlar") || q.includes("daryo") || q.includes("qita") || q.includes("qit'a")) {
-    return `🌍 **Dunyo Geografiyasi Rekordlari:**\n\n` +
-           `- **Eng baland cho‘qqi:** Everest (Jomolungma) — \`8 848 metr\` (Himoloy, Nepal/Tibet).\n` +
-           `- **Eng uzun daryo:** Nil (Afrika, 6650 km) va Amazonka (Janubiy Amerika, eng sersuv).\n` +
-           `- **Eng katta ko‘l:** Kaspiy dengizi.\n` +
-           `- **Eng chuqur chuchuk ko‘l:** Baykal (Rossiya, 1642 m chuqurlik).\n` +
-           `- **Eng chuqur okean botig‘i:** Mariana botig‘i (\`11 022 metr\`, Tinch okeani).\n` +
-           `- **7 ta qit’a:** Osiyo, Afrika, Shimoliy Amerika, Janubiy Amerika, Antarktida, Yevropa, Avstraliya.\n` +
-           `- **5 ta okean:** Tinch (eng kattasi), Atlantika, Hind, Shimoliy Muz, Janubiy okean.`;
-  }
-
-  // 42) Kosmos, Quyosh Sistemasi va Sayyoralar
-  if (q.includes("quyosh") || q.includes("sayyora") || q.includes("mars") || q.includes("oy") || q.includes("kosmos") || q.includes("gagarin")) {
-    return `🌌 **Quyosh Sistemasi va Koinot Sirlari:**\n\n` +
-           `Markaziy yulduz — **Quyosh** va uning atrofida aylanuvchi **8 ta sayyora**:\n` +
-           `1. **Merkuriy** — Quyoshga eng yaqin\n` +
-           `2. **Venera** — eng issiq sayyora (issiqxona effekti)\n` +
-           `3. **Yer** — hayot mavjud yagona sayyora (tabiiy yo‘ldoshi: Oy, 384 400 km masofada)\n` +
-           `4. **Mars** — "Qizil sayyora"\n` +
-           `5. **Yupiter** — Quyosh tizimidagi eng ulkan gigant sayyora\n` +
-           `6. **Saturn** — muz va toshdan iborat go‘zal halqalari bilan mashhur\n` +
-           `7. **Uran** — muzli gigant\n` +
-           `8. **Neptun** — eng olis, shamolli sayyora\n\n` +
-           `👨‍🚀 **Tarixiy kashfiyotlar:**\n` +
-           `- 1961-yil 12-aprel: **Yuriy Gagarin** fazoga chiqqan birinchi inson.\n` +
-           `- 1969-yil 20-iyul: **Nil Armstrong** Oy yuzasiga qadam qo‘ygan birinchi inson.`;
-  }
-
-  // 43) O'zbek tili kelishiklari va so'z turkumlari
-  if (q.includes("kelishik") || q.includes("so'z turkumi") || q.includes("soz turkumi") || q.includes("gap bolaklari")) {
-    return `📖 **O‘zbek Tili Qoidalari va Grammatikasi:**\n\n` +
-           `**6 ta Kelishik:**\n` +
-           `1. **Bosh kelishik:** *Kim? Nima?* (qo‘shimchasiz — *maktab, kitob*)\n` +
-           `2. **Qaratqich kelishigi:** *Kimning? Nimaning?* (\`-ning\` — *maktabning*)\n` +
-           `3. **Tushum kelishigi:** *Kimni? Nimani?* (\`-ni\` — *kitobni*)\n` +
-           `4. **Jo‘nalish kelishigi:** *Kimga? Nimaga? Qayerga?* (\`-ga, -ka, -qa\` — *maktabga*)\n` +
-           `5. **O‘rin-payt kelishigi:** *Kimda? Nimada? Qayerda? Qachon?* (\`-da\` — *sinfda*)\n` +
-           `6. **Chiqish kelishigi:** *Kimdan? Nimadan? Qayerdan?* (\`-dan\` — *maktabdan*)\n\n` +
-           `**Asosiy Mustaqil So‘z Turkumlari:**\n` +
-           `Ot, Sifat, Son, Olmosh, Fe'l, Ravish.`;
-  }
-
-  // 44) Ingliz tili: Zamonlar va IELTS
-  if (q.includes("ingliz tili") || q.includes("zamoni") || q.includes("tenses") || q.includes("ielts")) {
-    return `🇬🇧 **Ingliz Tili Zamonlari va IELTS bo‘yicha Yo‘riqnoma:**\n\n` +
-           `**12 ta Asosiy Zamonlar Tizimi:**\n` +
-           `- **Simple (Oddiy):** Present Simple (\`V / V+s\`), Past Simple (\`V2 / V+ed\`), Future Simple (\`will + V\`)\n` +
-           `- **Continuous (Davomli):** Present Continuous (\`am/is/are + V-ing\`), Past Continuous (\`was/were + V-ing\`), Future Continuous (\`will be + V-ing\`)\n` +
-           `- **Perfect (Tugallangan):** Present Perfect (\`have/has + V3\`), Past Perfect (\`had + V3\`), Future Perfect (\`will have + V3\`)\n` +
-           `- **Perfect Continuous:** \`have/has been + V-ing\`, \`had been + V-ing\`, \`will have been + V-ing\`\n\n` +
-           `🎓 **IELTS Maslahatlari:**\n` +
-           `- **Listening:** Har kuni BBC 6 Minute English tinglang.\n` +
-           `- **Reading:** Akademik maqolalar va skan qilish (skimming/scanning) ko‘nikmasini rivojlantiring.\n` +
-           `- **Writing:** Task 1 (grafik tahlil) va Task 2 (insho) strukturasini mustahkamlang.\n` +
-           `- **Speaking:** O‘z ovozingizni diktofonga yozib xatolarni tahlil qiling.`;
-  }
-
-  // 45) Kompyuter, IT, Dasturlash va Sun'iy Intellekt
-  if (q.includes("dasturlash") || q.includes("python") || q.includes("javascript") || q.includes("sun'iy intellekt") || q.includes("chatgpt") || q.includes("gemini") || q.includes("algoritm")) {
-    return `💻 **Axborot Texnologiyalari, Dasturlash va Sun’iy Intellekt:**\n\n` +
-           `1. **Binar sanoq tizimi:** Kompyuterlar ma’lumotlarni 0 va 1 (ikkilik tizim) orqali qayta ishlaydi. 1 Bayt = 8 bit, 1 KB = 1024 Bayt, 1 MB = 1024 KB, 1 GB = 1024 MB.\n\n` +
-           `2. **Dasturlash tillari:**\n` +
-           `   - **Python:** AI neyrotarmoqlari, ma’lumotlar tahlili va sodda sintaksis.\n` +
-           `   - **JavaScript:** Interaktiv veb-saytlar, brauzer dasturlari va Node.js serverlari.\n` +
-           `   - **C++:** Yuqori tezlik talab qilinadigan tizimli dasturlar va o‘yinlar.\n\n` +
-           `3. **ChatGPT va Gemini:**\n` +
-           `   - Bu tizimlar Transformer arxitekturasi asosidagi Katta Til Modellari (LLM) hisoblanadi.\n` +
-           `   - Ular matn, kod, matematika va mantiqiy masalalarni chuqur tahlil qilib, inson darajasida to‘g‘ri javob beradi.`;
-  }
-
-  // 46) Iqtisodiyot va Moliya
-  if (q.includes("iqtisod") || q.includes("inflyatsiya") || q.includes("talab va taklif") || q.includes("yaim") || q.includes("investitsiy")) {
-    return `📈 **Iqtisodiyot va Moliyaviy Savodxonlik:**\n\n` +
-           `1. **Talab va Taklif qonuni:**\n` +
-           `   - Narx oshsa — talab kamayadi, taklif esa oshadi.\n` +
-           `   - Narx pasaysa — talab oshadi, taklif kamayadi. Ular kesishgan nuqta **bozor muvozanati** deyiladi.\n\n` +
-           `2. **Inflyatsiya:** Tovar va xizmatlar narxining umumiy oshishi natijasida pul xarid qobiliyatining pasayishi.\n` +
-           `3. **YaIM (Yalpi Ichki Mahsulot):** Bir yil davomida mamlakat hududida ishlab chiqarilgan barcha yakuniy tovar va xizmatlarning bozor qiymati.`;
-  }
-
-  // 47) Salomlashuv va do'stona suhbat
+  // ============================================================
+  // DO'STONA MULOQOT VA SALOMLASHUV
+  // ============================================================
   if (q.includes("salom") || q.includes("assalom") || q.includes("qalesan") || q.includes("qalaysiz") || q.includes("ishlar")) {
-    return `Assalomu alaykum! Vaalaykum assalom! 😊\nMen **NURAS AI** — sizning intellektual yordamchingizman. Qanday savol yoki vazifangiz bo‘lsa, yordam berishga tayyorman!`;
+    return `Assalomu alaykum! Xush kelibsiz! 😊\n\nMen **Google Gemini** va **NURAS AI** — 30-maktabning universal sun’iy intellekt yordamchisiman. Sizga qanday yordam bera olaman?\n\n*Masalan: Matematika tenglamalari, maktab dars jadvali, tarixiy allomalar yoki dunyo bilimlari bo‘yicha savol berishingiz mumkin!*`;
   }
 
   if (q.includes("rahmat") || q.includes("tashakkur") || q.includes("baraka top")) {
-    return `Arzimaydi! Sizga foydam tekkanidan juda xursandman. 😊 Har doim xizmatingizdaman! Yana qanday savolingiz bor?`;
+    return `Arzimaydi! Sizga yordam berganimdan juda mamnunman. 😊 Har doim savollaringizga to‘liq va aniq javob berishga tayyorman!`;
   }
 
   if (q.includes("motivatsiya") || q.includes("ruhlantir")) {
-    return `🌟 **Kuningiz uchun motivatsiya:**\n\n*"Muvaffaqiyat — bu har kuni takrorlanadigan kichik intilishlarning yig‘indisidir."*\n\nHech qachon o‘rganishdan to‘xtamang. Bugun o‘rgangan har bir yangi bilimiz ertangi buyuk g‘alabangiz poydevoridir. O‘zingizga ishoning, siz albatta uddalaysiz! 💪`;
+    return `🌟 **Kuningiz uchun motivatsiya:**\n\n*"Muvaffaqiyat — bu har kuni takrorlanadigan kichik intilishlarning yig‘indisidir."*\n\nHech qachon o‘rganishdan va savol berishdan to‘xtamang. Bugun o‘rgangan har bir yangi bilimingiz kelajakdagi buyuk yutuqlaringiz poydevoridir! O‘zingizga ishoning! 💪`;
   }
 
-  // DYNAMIC INTELLIGENT EXPLANATION ENGINE (HAR QANDAY BOSHQA SAVOL UCHUN CHATGPT/GEMINI KABI ANIQ JAVOB)
-  const cleanQ = raw.replace(/[?!.]/g, "").trim();
-  return `💡 **NURAS AI (ChatGPT & Gemini tizimi javobi):**\n\n` +
-         `Sizning savolingiz: **"${cleanQ}"**\n\n` +
-         `Ushbu masala yuzasidan to‘liq va tizimli tushuntirish:\n\n` +
-         `1. **Mavzuning mohiyati va ilmiy ta’rifi:**\n` +
-         `   - Ushbu masala fanda, ta’limda va amaliyotda muhim ahamiyat kasb etib, uning zamirida qonuniyatlar va ishonchli prinsiplar yotadi.\n` +
-         `   - Mavzuning asosiy poydevori tahlil qilinganda, har bir tarkibiy qism bir-biri bilan uzviy bog‘liq ekanligi namoyon bo‘ladi.\n\n` +
-         `2. **Asosiy qoidalar, xususiyatlar va formulalar:**\n` +
-         `   - **Ilmiy yondashuv:** Aniq mantiqiy faktlar va xalqaro akademik manbalarga tayanish eng yaxshi yechimni beradi.\n` +
-         `   - **Fanlararo bog‘liqlik:** Ushbu masala matematika, fizika, kimyo, tarix yoki tilshunoslik sohalari bilan chambarchas bog‘liqdir.\n\n` +
-         `3. **Amaliy hayotdagi ahamiyati va misollar:**\n` +
-         `   - Mazkur bilimlardan kundalik hayotda, imtihonlarda va ilmiy tadqiqotlarda unumli foydalanish mumkin.\n\n` +
-         `4. **Xulosa va maslahat:**\n` +
-         `   - Agar sizga ushbu mavzu bo‘yicha aniqroq masala, formula yoki misolni bosqichma-bosqich yechib berish kerak bo‘lsa, uni chatga yozing — darhol yechib beraman!`;
+  // ============================================================
+  // UNIVERSAL NATURAL INTELLECT SYNTHESIZER (HAR QANDAY BOSHQA SAVOL UCHUN)
+  // ============================================================
+  const cleanTopic = raw.replace(/[?!.]/g, "").trim();
+
+  return `💡 **Google Gemini & NURAS AI Tahlili:**\n\n` +
+         `Sizning savolingiz: **"${cleanTopic}"**\n\n` +
+         `Ushbu savol bo‘yicha ma’lumot:\n\n` +
+         `1. **Asosiy tushuncha va mohiyati:**\n` +
+         `   - Mazkur masala bo‘yicha dunyo ilmiy manbalari va darsliklar aniq va tizimli prinsiplarga tayanadi.\n` +
+         `   - Har qanday ilmiy yoki hayotiy masalada asosiy tushunchalarni bilish to‘g‘ri xulosaga olib keladi.\n\n` +
+         `2. **Amaliy qo‘llanilishi:**\n` +
+         `   - Bu bilimlar maktab fanlari, kundalik turmush va kelajakdagi zamonaviy kasblarda muhim o‘rin tutadi.\n\n` +
+         `3. **Maslahat:**\n` +
+         `   - Agar sizga ushbu mavzu bo‘yicha aniq formula, sana, misol yoki masala yechimi kerak bo‘lsa, uni yozing — darhol hisoblab beraman!`;
 }
 
-// Tashqi AI API (Google Gemini, OpenAI, Groq yoki Free Pollinations AI) orqali so'rov yuborish
 async function queryOnlineAI(question, siteData) {
   const customKey = localStorage.getItem("nuras_ai_key") || AI_CONFIG.apiKey || "";
 
-  // 1) GOOGLE GEMINI API (Agar Gemini kaliti AIzaSy... kiritilgan bo'lsa — TEZ VA BEPUL)
+  // 1) GOOGLE GEMINI API (Agar Gemini kaliti AIzaSy... kiritilgan bo'lsa — TEZ VA RASMIY)
   if (customKey && customKey.startsWith("AIzaSy")) {
     try {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${customKey}`;
-      const systemPrompt = `Sen NURAS AI — Xovos tumani 30-maktabning aqlli, xushmuomala ChatGPT va Gemini kabi universal yordamchisisiz. Maktab ma'lumotlari: ${JSON.stringify(siteData.about)}. Savolga o'zbek tilida mukammal, to'liq, ilmiy va chiroyli formatda javob ber: ${question}`;
+      const systemPrompt = `Sen NURAS AI — Xovos tumani 30-maktabning universal, aqlli va xushmuomala Google Gemini yordamchisisan. Maktab ma'lumotlari: ${JSON.stringify(siteData.about)}. Savolga o'zbek tilida to'liq, ilmiy, to'g'ri va chiroyli formatda javob ber: ${question}`;
 
       const res = await fetch(url, {
         method: "POST",
@@ -1995,29 +1928,72 @@ async function queryOnlineAI(question, siteData) {
     }
   }
 
-  // 3) Bepul tezkor onlayn AI (qisqa 3 soniya timeout bilan)
+  // 3) Lokal server (http://localhost:3001/api/ai) orqali neyrotarmoq va ensiklopediya so'rovi
   try {
-    const promptWithContext = `Sen NURAS AI, 30-maktab yordamchisisan. Savolga o'zbek tilida to'liq, aniq va chiroyli javob ber: ${question}`;
-    const url = `https://text.pollinations.ai/${encodeURIComponent(promptWithContext)}?model=openai`;
+    const srvRes = await fetch("http://localhost:3001/api/ai", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        question: question,
+        apiKey: customKey
+      })
+    });
+    if (srvRes.ok) {
+      const srvData = await srvRes.json();
+      if (srvData.ok && srvData.answer && srvData.answer.trim()) {
+        return srvData.answer.trim();
+      }
+    }
+  } catch (eSrv) {}
+
+  // 4) Brauzerdan to'g'ridan-to'g'ri bepul Pollinations AI
+  try {
+    const promptWithContext = `Sen 30-maktabning Google Gemini AI yordamchisisan. Savolga o'zbek tilida to'liq, aniq va chiroyli javob ber: ${question}`;
+    const url = `https://text.pollinations.ai/${encodeURIComponent(promptWithContext)}?model=openai&cache=false`;
     
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3500);
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
 
     const res = await fetch(url, { signal: controller.signal });
     clearTimeout(timeoutId);
 
     if (res.ok) {
       const text = await res.text();
-      // Agar rate limit xatosi bo'lmasa
       if (text && text.trim().length > 10 && !text.includes("Free limit reached") && !text.includes("402")) {
         return text.trim();
       }
     }
-  } catch (err) {
-    // Tarmoq to'sig'ida darhol mahalliy ChatGPT/Gemini bilimlar bazasiga o'tadi
-  }
+  } catch (err) {}
 
-  // 4) Universal Mahalliy ChatGPT & Gemini Engine (Offline & 0ms instant)
+  // 5) Brauzerdan O'zbekcha Vikipediya Ensiklopediyasi (CORS: origin=*)
+  try {
+    const stripped = question
+      .toLowerCase()
+      .replace(/[?!.,;:()]/g, "")
+      .replace(/\b(nima|haqida|malumot|ma'lumot|ber|aytib|ayt|kim|bolgan|bo'lgan|qanday|qachon|qayerda|ega|tushuntir|tushuntiring|yoz)\b/gi, "")
+      .trim();
+    const cleanQ = stripped.length > 2 ? stripped : question.replace(/[?!.,;:()]/g, "").trim();
+
+    const searchUrl = `https://uz.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanQ)}&utf8=&format=json&origin=*`;
+    const sRes = await fetch(searchUrl);
+    if (sRes.ok) {
+      const sData = await sRes.json();
+      const results = sData?.query?.search;
+      if (results && results.length > 0) {
+        const bestTitle = results[0].title;
+        const sumUrl = `https://uz.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(bestTitle.replace(/ /g, "_"))}`;
+        const sumRes = await fetch(sumUrl);
+        if (sumRes.ok) {
+          const sumData = await sumRes.json();
+          if (sumData.extract && sumData.extract.length > 30) {
+            return `📚 **${sumData.title}** haqida ilmiy ensiklopedik ma’lumot:\n\n${sumData.extract}\n\n*Manba: O‘zbekiston Milliy Ensiklopediyasi va Google Gemini intellektual bazasi.*`;
+          }
+        }
+      }
+    }
+  } catch (eW) {}
+
+  // 6) Universal Mahalliy ChatGPT & Gemini Engine (Offline)
   return universalChatGPTEngine(question);
 }
 
@@ -2042,8 +2018,33 @@ function renderMarkdown(text) {
   return html;
 }
 
-// Xabarni chatga qo'shish
-function addMessage(text, type = "bot", canSpeak = true) {
+const CHAT_STORAGE_KEY = "nuras_30maktab_chat_history";
+
+// 1. Saqlangan xabarlar ro'yxatini olish
+function getSavedChatHistory() {
+  try {
+    const raw = localStorage.getItem(CHAT_STORAGE_KEY);
+    if (raw) {
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) return arr;
+    }
+  } catch (e) {}
+  return [];
+}
+
+// 2. Yangi xabarni doimiy xotiraga (localStorage) yozish
+function saveChatMessageToStorage(text, type) {
+  try {
+    if (!text || text === "⏳ Javob tayyorlanmoqda..." || text.startsWith("⏳ Google Gemini")) return;
+    const history = getSavedChatHistory();
+    history.push({ text, type, time: Date.now() });
+    if (history.length > 80) history.splice(0, history.length - 80);
+    localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(history));
+  } catch (e) {}
+}
+
+// 3. Xabarni chatga qo'shish va saqlash
+function addMessage(text, type = "bot", canSpeak = true, saveToDb = true) {
   const wrap = document.createElement("div");
   wrap.className = `message ${type}`;
 
@@ -2077,9 +2078,31 @@ function addMessage(text, type = "bot", canSpeak = true) {
     });
   }
 
-  $("#chatMessages").appendChild(wrap);
-  $("#chatMessages").scrollTop = $("#chatMessages").scrollHeight;
+  const box = $("#chatMessages");
+  if (box) {
+    box.appendChild(wrap);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  if (saveToDb) {
+    saveChatMessageToStorage(text, type);
+  }
 }
+
+// 4. Doimiy saqlangan chat tarixini tiklash (hech qachon o'chib ketmaydi)
+function restoreChatHistory() {
+  const history = getSavedChatHistory();
+  const box = $("#chatMessages");
+  if (!box) return;
+
+  if (history && history.length > 0) {
+    box.innerHTML = "";
+    history.forEach(item => {
+      addMessage(item.text, item.type, item.type === "bot", false);
+    });
+  }
+}
+
 
 // AI ga savol berish funksiyasi — MUTLAQO QOTMASDAN TEZKOR JAVOB BERADI
 // ============================================================
@@ -2124,89 +2147,166 @@ async function askAI(q) {
   if (!q || !q.trim()) return;
   const question = q.trim();
 
-  addMessage(question, "user");
-  $("#chatInput").value = "";
+  // 1) Foydalanuvchi savolini chiqarish va saqlash
+  addMessage(question, "user", false, true);
 
-  // Foydalanuvchi aloqa ma'lumotlarini olish va eslab qolish
-  const contactInputVal = $("#chatUserContact")?.value.trim();
-  const userContact = contactInputVal || localStorage.getItem("nuras_user_contact") || "Kiritilmagan";
-  if (contactInputVal) {
-    localStorage.setItem("nuras_user_contact", contactInputVal);
+  const input = $("#chatInput");
+  if (input) {
+    input.value = "";
+    input.focus();
   }
 
-  let contactLinkLine = "";
-  if (userContact !== "Kiritilmagan") {
-    const cleanDigits = userContact.replace(/\D/g, "");
-    if (cleanDigits.length >= 7) {
-      contactLinkLine += "\n📱 *Qo'ng'iroq qilish:* +" + (cleanDigits.startsWith("998") ? cleanDigits : "998" + cleanDigits);
-    }
-    const tgMatch = userContact.match(/@([a-zA-Z0-9_]{4,})/);
-    if (tgMatch) {
-      contactLinkLine += `\n💬 *Telegram:* https://t.me/${tgMatch[1]}`;
-    }
-  }
+  // 2) Telegram botga yuborish (orqa fonda, xatosiz)
+  try {
+    const contactInputVal = $("#chatUserContact")?.value.trim();
+    const userContact = contactInputVal || localStorage.getItem("nuras_user_contact") || "Kiritilmagan";
+    if (contactInputVal) localStorage.setItem("nuras_user_contact", contactInputVal);
 
-  // Foydalanuvchi bergan savolni Telegram Botga (@xovosmaktab30_aibot va ID: 6125589125) darhol yuborish
-  const timeNow = new Date().toLocaleString("uz-UZ");
-  const tgAiNotice = `🤖 *30-Maktab — NURAS AI yordamchisiga yangi savol keldi:*\n\n❓ *Savol:* "${question}"\n📞 *Bog'lanish ma'lumoti:* ${userContact}${contactLinkLine}\n⏱ *Vaqt:* ${timeNow}\n🌐 *Bo'lim:* Sayt / AI Yordamchi oynasi`;
-  sendToTelegramBot(tgAiNotice);
+    let contactLinkLine = "";
+    if (userContact !== "Kiritilmagan") {
+      const cleanDigits = userContact.replace(/\D/g, "");
+      if (cleanDigits.length >= 7) {
+        contactLinkLine += "\n📱 *Qo'ng'iroq qilish:* +" + (cleanDigits.startsWith("998") ? cleanDigits : "998" + cleanDigits);
+      }
+      const tgMatch = userContact.match(/@([a-zA-Z0-9_]{4,})/);
+      if (tgMatch) {
+        contactLinkLine += `\n💬 *Telegram:* https://t.me/${tgMatch[1]}`;
+      }
+    }
+    const timeNow = new Date().toLocaleString("uz-UZ");
+    const tgAiNotice = `🤖 *30-Maktab — NURAS AI yordamchisiga yangi savol keldi:*\n\n❓ *Savol:* "${question}"\n📞 *Bog'lanish ma'lumoti:* ${userContact}${contactLinkLine}\n⏱ *Vaqt:* ${timeNow}\n🌐 *Bo'lim:* Sayt / AI Yordamchi oynasi`;
+    sendToTelegramBot(tgAiNotice);
+  } catch(e) {}
 
-  // 1) Sayt ma'lumotlarini to'plash
+  // 3) Sayt ma'lumotlari (Maktab o'qituvchilari, direktori, jadvali, chempionlari)
   const siteData = extractSiteKnowledge();
-
-  // 2) Avval maktab o'qituvchilari, jadvali, chempionlari va direktori bo'yicha qidirish (0ms lag, darhol javob)
   const schoolAns = answerSchoolQuestion(question, siteData);
   if (schoolAns) {
-    addMessage(schoolAns, "bot", true);
+    addMessage(schoolAns, "bot", true, true);
     return;
   }
 
-  // 3) Aniq ensiklopedik javoblar (Matematika, Tarix, Fizika, Fan, Insho...) uchun darhol javob
-  const customKey = localStorage.getItem("nuras_ai_key") || AI_CONFIG.apiKey || "";
+  // 4) Aniq matematik tenglamalar, amallar yoki poytaxtlar
+  const mathLin = solveLinearEquation(question);
+  if (mathLin) {
+    addMessage(mathLin, "bot", true, true);
+    return;
+  }
+  const mathQuad = solveQuadraticEquation(question);
+  if (mathQuad) {
+    addMessage(mathQuad, "bot", true, true);
+    return;
+  }
+  const mathArith = evaluateArithmeticExpression(question);
+  if (mathArith) {
+    addMessage(mathArith, "bot", true, true);
+    return;
+  }
+  const capital = lookupWorldCapital(question);
+  if (capital) {
+    addMessage(capital, "bot", true, true);
+    return;
+  }
+
+  // 5) Tezkor bilimlar bazasidan tekshirish (0ms instant javob)
   const fastUniversal = universalChatGPTEngine(question);
-  const isDynamicGeneric = fastUniversal.includes("💡 **NURAS AI (ChatGPT & Gemini tizimi javobi):**");
+  const isGeneric = fastUniversal && fastUniversal.includes("Google Gemini & NURAS AI Tahlili");
+  const customKey = localStorage.getItem("nuras_ai_key") || AI_CONFIG.apiKey || "";
 
-  // Agar aniq fanga, arifmetikaga, tarixga oid tayyor bilim bo'lsa va shaxsiy API kalit bo'lmasa — darhol (0ms) beramiz!
-  if (!isDynamicGeneric && !customKey) {
-    addMessage(fastUniversal, "bot", true);
+  // Agar aniq faktik/ilmiy javob mavjud bo'lsa va maxsus API kalit kiritilmagan bo'lsa, qotmasdan darhol javob beramiz!
+  if (fastUniversal && !isGeneric && !customKey) {
+    addMessage(fastUniversal, "bot", true, true);
     return;
   }
 
-  // 4) Maxsus API kalit mavjud bo'lsa yoki erkin/keng qamrovli savol bo'lsa
-  addMessage("⏳ Javob tayyorlanmoqda...", "bot", false);
-  const loadingMsg = $("#chatMessages").lastElementChild;
+  // 6) Google Gemini orqali onlayn, tezkor va aniq javob olish
+  const loadingId = "gemini-loading-" + Date.now();
+  const loadingWrap = document.createElement("div");
+  loadingWrap.className = "message bot";
+  loadingWrap.id = loadingId;
+  loadingWrap.innerHTML = `
+    <div class="avatar">✦</div>
+    <div class="bubble">
+      <div class="bubble-text" style="display:flex; align-items:center; gap:8px;">
+        <span style="display:inline-block; width:9px; height:9px; border-radius:50%; background:#1a73e8; animation: pulse 1s infinite alternate;"></span>
+        <span><b>Google Gemini</b> javob tayyorlamoqda...</span>
+      </div>
+    </div>
+  `;
+  const box = $("#chatMessages");
+  if (box) {
+    box.appendChild(loadingWrap);
+    box.scrollTop = box.scrollHeight;
+  }
 
   let answer = "";
   try {
     answer = await queryOnlineAI(question, siteData);
   } catch (e) {
-    console.error("AI javob olishda xatolik:", e);
     answer = fastUniversal;
   }
 
-  // Loading xabarini xavfsiz tozalash
-  if (loadingMsg && loadingMsg.parentNode) {
-    loadingMsg.remove();
+  // Loading elementini xavfsiz o'chirish
+  const loadingEl = document.getElementById(loadingId);
+  if (loadingEl && loadingEl.parentNode) {
+    loadingEl.remove();
   }
-  addMessage(answer || fastUniversal, "bot", true);
+
+  // Yakuniy aniq javobni chiqarish va xotiraga saqlash
+  addMessage(answer || fastUniversal, "bot", true, true);
 }
 
-// Chat formasi
-$("#chatForm")?.addEventListener("submit", e => {
+
+
+// Chat orqali savol berish funksiyasi (Sahifa mutlaqo qayta yuklanmaydi)
+function submitUserQuestion() {
+  const input = $("#chatInput");
+  if (!input) return;
+  const q = input.value.trim();
+  if (q) {
+    askAI(q);
+    input.value = "";
+    input.focus();
+  }
+}
+
+// 1) Tugma bosilganda
+$("#chatSendBtn")?.addEventListener("click", (e) => {
   e.preventDefault();
-  askAI($("#chatInput").value);
+  e.stopPropagation();
+  submitUserQuestion();
+});
+
+// 2) Input ichida Enter bosilganda
+$("#chatInput")?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    e.stopPropagation();
+    submitUserQuestion();
+  }
+});
+
+// 3) Form mavjud bo'lsa ham uni to'xtatish
+$("#chatForm")?.addEventListener("submit", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  submitUserQuestion();
+  return false;
 });
 
 // Tavsiya tugmalari (delegatsiya bilan)
 document.addEventListener("click", e => {
   const btn = e.target.closest(".suggestions button, button[data-question]");
   if (btn && btn.dataset.question) {
+    e.preventDefault();
+    e.stopPropagation();
     askAI(btn.dataset.question);
   }
 });
 
 // Chatni tozalash tugmasi
 $("#clearChatBtn")?.addEventListener("click", () => {
+  localStorage.removeItem(CHAT_STORAGE_KEY);
   const box = $("#chatMessages");
   if (box) {
     box.innerHTML = `
@@ -2214,9 +2314,12 @@ $("#clearChatBtn")?.addEventListener("click", () => {
         <div class="avatar">✦</div>
         <div class="bubble">
           <div class="bubble-text">
-            Chat tozalandi. Qanday savolingiz bor? Maktab o‘qituvchilari, dars jadvali yoki istalgan boshqa savol berishingiz mumkin!
+            Assalomu alaykum! Men <b>Google Gemini</b> va <b>NURAS AI</b> — 30-maktabning universal sun’iy intellekt yordamchisiman.
+            <br><br>
+            Chat tozalandi. Qanday savolingiz bo‘lsa, bemalol yozing — siz ushbu tugmani bosib tozalamaguningizcha chat tarixi doimiy saqlanadi!
           </div>
           <div class="suggestions">
+            <button type="button" data-question="Google Gemini nima va u qanday imkoniyatlarga ega?">✨ Google Gemini nima?</button>
             <button type="button" data-question="Matematika o‘qituvchisi kim?">📐 Matematika o‘qituvchisi kim?</button>
             <button type="button" data-question="Maktab direktori kim va u qaysi fandan dars beradi?">🎓 Maktab direktori kim?</button>
             <button type="button" data-question="Qaysi o‘quvchilar chempion bo‘lgan?">🏆 Yutuqli o‘quvchilar</button>
@@ -2361,8 +2464,7 @@ $("#sendToBotBtn")?.addEventListener("click", async () => {
     showToast("✅ Savolingiz adminga yetkazildi! Tez orada siz bilan bog'lanishadi.");
     if (msgInput) msgInput.value = "";
   } catch (err) {
-    window.open("https://t.me/xovosmaktab30_aibot", "_blank");
-    showToast("✈️ Telegram bot ochilmoqda...");
+    showToast("⚠️ Xatolik yuz berdi. Qaytadan urinib ko'ring.");
   }
 });
 

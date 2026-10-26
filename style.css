@@ -1022,7 +1022,16 @@ audio {
   background: #0b4ea2;
   color: #fff;
   padding: 0 18px;
-  font-weight: 800
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.chat-input button:hover {
+  background: #093c7d;
+  transform: translateY(-1px);
+}
+.chat-input button:active {
+  transform: translateY(0);
 }
 
 .rating-section {

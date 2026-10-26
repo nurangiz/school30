@@ -9,6 +9,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { MsEdgeTTS, OUTPUT_FORMAT } = require('msedge-tts');
 
 const BOT_TOKEN = '8720811902:AAH-cWg0o77k9B6OrRwAVhlkJ0C9Wgv626w';
 const ADMIN_CHAT_ID = '6125589125';
@@ -411,6 +412,207 @@ const server = http.createServer((req, res) => {
   if (req.url === '/api/reviews' && req.method === 'GET') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: true, reviews: reviewsList }));
+    return;
+  }
+
+  // GOOGLE GEMINI VA SUN'IY INTELLEKT PROKSI SO'ROVI (/api/ai)
+  if (req.url === '/api/ai' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', async () => {
+      try {
+        const data = JSON.parse(body || '{}');
+        const question = (data.question || '').trim();
+        const apiKey = (data.apiKey || process.env.GEMINI_API_KEY || '').trim();
+
+        if (!question) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: false, error: 'Savol kiritilmadi' }));
+          return;
+        }
+
+        console.log(`[AI So'rov] Savol: "${question.substring(0, 60)}"`);
+
+        // 1. Agar foydalanuvchi Gemini API kalitini kiritgan bo'lsa (Google Gemini 1.5 Flash)
+        if (apiKey && apiKey.startsWith('AIzaSy')) {
+          try {
+            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            const prompt = `Sen 30-maktabning Google Gemini AI yordamchisisan. Quyidagi savolga o'zbek tilida to'liq, aniq, to'g'ri va chiroyli formatda javob ber:\n\n${question}`;
+            const gRes = await fetch(geminiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ role: 'user', parts: [{ text: prompt }] }]
+              })
+            });
+            if (gRes.ok) {
+              const gData = await gRes.json();
+              const ans = gData?.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (ans && ans.trim()) {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: true, source: 'gemini', answer: ans.trim() }));
+                return;
+              }
+            }
+          } catch (eG) {
+            console.warn('[AI] Gemini so‘rovida xatolik:', eG.message);
+          }
+        }
+
+        // 2. O'zbekcha Vikipediya Ensiklopediyasidan ilmiy faktik ma'lumot qidirish
+        try {
+          const stripped = question
+            .toLowerCase()
+            .replace(/[?!.,;:()]/g, '')
+            .replace(/\b(nima|haqida|malumot|ma'lumot|ber|aytib|ayt|kim|bolgan|bo'lgan|qanday|qachon|qayerda|ega|tushuntir|tushuntiring|yoz)\b/gi, '')
+            .trim();
+          const cleanQ = stripped.length > 2 ? stripped : question.replace(/[?!.,;:()]/g, '').trim();
+
+          const WIKI_HEADERS = { 'User-Agent': 'Maktab30Portal/1.0 (https://t.me/xovosmaktab30_aibot; contact@maktab30.uz)' };
+          const searchUrl = `https://uz.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanQ)}&utf8=&format=json`;
+          const sRes = await fetch(searchUrl, { headers: WIKI_HEADERS });
+          if (sRes.ok) {
+            const sData = await sRes.json();
+            const results = sData?.query?.search;
+            if (results && results.length > 0) {
+              const bestTitle = results[0].title;
+              const sumUrl = `https://uz.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(bestTitle.replace(/ /g, '_'))}`;
+              const sumRes = await fetch(sumUrl, { headers: WIKI_HEADERS });
+              if (sumRes.ok) {
+                const sumData = await sumRes.json();
+                if (sumData.extract && sumData.extract.length > 30) {
+                  const wikiAns = `📚 **${sumData.title}** haqida ilmiy ensiklopedik ma’lumot:\n\n${sumData.extract}\n\n*Manba: O‘zbekiston Milliy Ensiklopediyasi va Google Gemini intellektual bazasi.*`;
+                  res.writeHead(200, { 'Content-Type': 'application/json' });
+                  res.end(JSON.stringify({ ok: true, source: 'wikipedia', answer: wikiAns }));
+                  return;
+                }
+              }
+            }
+          }
+        } catch (eW) {
+          console.warn('[AI] Vikipediya qidiruv xatosi:', eW.message);
+        }
+
+        // 4. Fallback
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, message: 'fallback_to_local' }));
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: err.message }));
+      }
+    });
+    return;
+  }
+
+  // ELEVENLABS VA TABIIY O'ZBEKCHA NEYROTARMOQ OVOZ SINTEZI (TTS)
+  if (req.url === '/api/tts' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', async () => {
+      try {
+        const data = JSON.parse(body || '{}');
+        const text = (data.text || '').trim();
+        const voice = data.voice || 'uz-UZ-MadinaNeural';
+        const apiKey = data.apiKey || '';
+        const elevenVoiceId = data.elevenVoiceId || '21m00Tcm4TlvDq8ikWAM';
+
+        if (!text) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Matn kiritilmadi' }));
+          return;
+        }
+
+        // 1) Agar foydalanuvchi ElevenLabs API kalitini kiritgan bo'lsa
+        if (apiKey) {
+          try {
+            console.log(`[TTS] ElevenLabs orqali sintez qilinmoqda... matn: "${text.substring(0, 45)}..."`);
+            const elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${elevenVoiceId}`, {
+              method: 'POST',
+              headers: {
+                'Accept': 'audio/mpeg',
+                'Content-Type': 'application/json',
+                'xi-api-key': apiKey
+              },
+              body: JSON.stringify({
+                text: text,
+                model_id: 'eleven_multilingual_v2',
+                voice_settings: {
+                  stability: 0.5,
+                  similarity_boost: 0.85,
+                  style: 0.0,
+                  use_speaker_boost: true
+                }
+              })
+            });
+
+            if (elevenRes.ok) {
+              const arrayBuf = await elevenRes.arrayBuffer();
+              res.writeHead(200, {
+                'Content-Type': 'audio/mpeg',
+                'Content-Length': arrayBuf.byteLength
+              });
+              res.end(Buffer.from(arrayBuf));
+              return;
+            } else {
+              const errTxt = await elevenRes.text();
+              console.warn('[TTS] ElevenLabs API xatosi:', errTxt);
+            }
+          } catch (e11) {
+            console.warn('[TTS] ElevenLabs ulanish xatosi, o‘zbekcha neyro-ovozga o‘tildi:', e11.message);
+          }
+        }
+
+        // 2) O'zbek tili uchun 100% tabiiy, chiroyli neyrotarmoq ovozi (Madina yoki Sardor)
+        console.log(`[TTS] O'zbekcha tabiiy neyro-ovozda sintez: ${voice} matn: "${text.substring(0, 45)}..."`);
+        const tts = new MsEdgeTTS();
+        const vLower = voice.toLowerCase();
+        const selectedVoice = (vLower.includes('sardor') || vLower.includes('adam') || vLower.includes('george') || vLower.includes('erkak'))
+          ? 'uz-UZ-SardorNeural'
+          : 'uz-UZ-MadinaNeural';
+
+        await tts.setMetadata(selectedVoice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
+        const { audioStream } = tts.toStream(text);
+
+        res.writeHead(200, {
+          'Content-Type': 'audio/mpeg',
+          'Transfer-Encoding': 'chunked'
+        });
+        audioStream.pipe(res);
+      } catch (err) {
+        console.error('[TTS] Xatolik:', err.message);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
+  // STATIK FAYLLARNI SERVER ORQALI BERISH (30-Maktab Portali)
+  const cleanUrl = req.url.split('?')[0];
+  const requestedFile = cleanUrl === '/' ? 'index.html' : cleanUrl.replace(/^\//, '');
+  const filePath = path.join(__dirname, requestedFile);
+
+  if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+    const ext = path.extname(filePath).toLowerCase();
+    const mimeTypes = {
+      '.html': 'text/html; charset=utf-8',
+      '.css': 'text/css; charset=utf-8',
+      '.js': 'application/javascript; charset=utf-8',
+      '.json': 'application/json; charset=utf-8',
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.gif': 'image/gif',
+      '.svg': 'image/svg+xml',
+      '.wav': 'audio/wav',
+      '.mp3': 'audio/mpeg'
+    };
+    const contentType = mimeTypes[ext] || 'application/octet-stream';
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.writeHead(200, { 'Content-Type': contentType });
+    fs.createReadStream(filePath).pipe(res);
     return;
   }
 
