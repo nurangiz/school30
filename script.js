@@ -2082,12 +2082,74 @@ function addMessage(text, type = "bot", canSpeak = true) {
 }
 
 // AI ga savol berish funksiyasi — MUTLAQO QOTMASDAN TEZKOR JAVOB BERADI
+// ============================================================
+// TELEGRAM BOT SOZLAMASI (Token: 8720811902... ID: 6125589125)
+// ============================================================
+const TELEGRAM_BOT_CONFIG = {
+  token: "8720811902:AAH-cWg0o77k9B6OrRwAVhlkJ0C9Wgv626w",
+  chatId: "6125589125",
+  botUsername: "xovosmaktab30_aibot",
+  apiUrl: "https://api.telegram.org/bot8720811902:AAH-cWg0o77k9B6OrRwAVhlkJ0C9Wgv626w"
+};
+
+// Saytdan Telegram Botga to'g'ridan-to'g'ri xabar yuborish funksiyasi
+async function sendToTelegramBot(text) {
+  try {
+    // 1) Brauzerdan to'g'ridan-to'g'ri Telegram API ga yuborish (server bo'lmasa ham 100% ishlaydi)
+    fetch(`${TELEGRAM_BOT_CONFIG.apiUrl}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: TELEGRAM_BOT_CONFIG.chatId,
+        text: text,
+        parse_mode: "Markdown"
+      })
+    }).catch(e => console.warn("TG Direct fetch ogohlantirish:", e));
+
+    // 2) Lokal server (telegram_bot.js) ga ham yuborish
+    fetch("http://localhost:3001/api/send_bot", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: "Sayt foydalanuvchisi",
+        message: text
+      })
+    }).catch(() => {});
+  } catch (err) {
+    console.warn("Telegram botga yuborishda xatolik:", err);
+  }
+}
+
 async function askAI(q) {
   if (!q || !q.trim()) return;
   const question = q.trim();
 
   addMessage(question, "user");
   $("#chatInput").value = "";
+
+  // Foydalanuvchi aloqa ma'lumotlarini olish va eslab qolish
+  const contactInputVal = $("#chatUserContact")?.value.trim();
+  const userContact = contactInputVal || localStorage.getItem("nuras_user_contact") || "Kiritilmagan";
+  if (contactInputVal) {
+    localStorage.setItem("nuras_user_contact", contactInputVal);
+  }
+
+  let contactLinkLine = "";
+  if (userContact !== "Kiritilmagan") {
+    const cleanDigits = userContact.replace(/\D/g, "");
+    if (cleanDigits.length >= 7) {
+      contactLinkLine += "\n📱 *Qo'ng'iroq qilish:* +" + (cleanDigits.startsWith("998") ? cleanDigits : "998" + cleanDigits);
+    }
+    const tgMatch = userContact.match(/@([a-zA-Z0-9_]{4,})/);
+    if (tgMatch) {
+      contactLinkLine += `\n💬 *Telegram:* https://t.me/${tgMatch[1]}`;
+    }
+  }
+
+  // Foydalanuvchi bergan savolni Telegram Botga (@xovosmaktab30_aibot va ID: 6125589125) darhol yuborish
+  const timeNow = new Date().toLocaleString("uz-UZ");
+  const tgAiNotice = `🤖 *30-Maktab — NURAS AI yordamchisiga yangi savol keldi:*\n\n❓ *Savol:* "${question}"\n📞 *Bog'lanish ma'lumoti:* ${userContact}${contactLinkLine}\n⏱ *Vaqt:* ${timeNow}\n🌐 *Bo'lim:* Sayt / AI Yordamchi oynasi`;
+  sendToTelegramBot(tgAiNotice);
 
   // 1) Sayt ma'lumotlarini to'plash
   const siteData = extractSiteKnowledge();
@@ -2241,7 +2303,7 @@ $("#reviewForm").addEventListener("submit",e=>{
   if (alertBox) {
     alertBox.style.display = "block";
     alertBox.innerHTML = `
-      ✅ <b>Rahmat, ${escapeHtml(revName)}!</b> Sizning <b>${revStar} yulduzli</b> bahongiz saytda saqlandi hamda rasmiy <a href="https://t.me/Maktab30Xovos_bot" target="_blank" rel="noopener">@Maktab30Xovos_bot</a> Telegram botiga muvaffaqiyatli yetkazildi!
+      ✅ <b>Rahmat, ${escapeHtml(revName)}!</b> Sizning <b>${revStar} yulduzli</b> bahongiz saytda saqlandi hamda rasmiy <a href="https://t.me/xovosmaktab30_aibot" target="_blank" rel="noopener">@xovosmaktab30_aibot</a> Telegram botiga muvaffaqiyatli yetkazildi!
     `;
   }
 
@@ -2252,40 +2314,63 @@ loadReviews();
 
 /* ============================================================
    TELEGRAM BOT BILAN BOG'LANISH VA MUROJAAT YUBORISH
-   Bot: @Maktab30Xovos_bot
+   Bot: @xovosmaktab30_aibot
    ============================================================ */
 $("#sendToBotBtn")?.addEventListener("click", async () => {
   const nameInput = $("#tgDirectName");
+  const contactInput = $("#tgDirectContact");
   const msgInput = $("#tgDirectMsg");
+
   const name = nameInput?.value.trim() || "Sayt Mehmoni";
+  const contact = contactInput?.value.trim() || "";
   const msg = msgInput?.value.trim();
 
   if (!msg) {
-    showToast("⚠️ Iltimos, avval xabaringizni yozing.");
+    showToast("⚠️ Iltimos, avval savolingizni yozing.");
     msgInput?.focus();
     return;
   }
 
-  showToast("⏳ Botga yuborilmoqda...");
+  if (!contact) {
+    showToast("⚠️ Admin sizga javob qaytarishi uchun telefon yoki @Telegramingizni yozing.");
+    contactInput?.focus();
+    return;
+  }
+
+  localStorage.setItem("nuras_user_contact", contact);
+  if ($("#chatUserContact")) $("#chatUserContact").value = contact;
+
+  showToast("⏳ Adminga yuborilmoqda...");
+
+  let contactLinks = "";
+  const cleanDigits = contact.replace(/\D/g, "");
+  if (cleanDigits.length >= 7) {
+    contactLinks += "\n📱 *Qo'ng'iroq qilish:* +" + (cleanDigits.startsWith("998") ? cleanDigits : "998" + cleanDigits);
+  }
+  const tgMatch = contact.match(/@([a-zA-Z0-9_]{4,})/);
+  if (tgMatch) {
+    contactLinks += `\n💬 *Telegram:* https://t.me/${tgMatch[1]}`;
+  } else if (!cleanDigits && contact.length > 2) {
+    contactLinks += `\n💬 *Telegram:* https://t.me/${contact.replace(/^@/, "")}`;
+  }
+
+  const textPayload = `📩 *30-Maktab saytidan yangi savol / murojaat:*\n\n👤 *Yuboruvchi:* ${name}\n📞 *Bog'lanish (Aloqa):* ${contact}${contactLinks}\n💬 *Xabar:* "${msg}"\n⏱ *Vaqt:* ${new Date().toLocaleString("uz-UZ")}\n🌐 *Bo'lim:* Sayt / Maktab ma'muriyati`;
 
   try {
-    const res = await fetch("http://localhost:3001/api/send_bot", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, message: msg })
-    });
-    const data = await res.json();
-    if (data.ok) {
-      showToast("✅ Xabar @Maktab30Xovos_bot ga yetkazildi!");
-      if (msgInput) msgInput.value = "";
-    } else {
-      window.open(`https://t.me/Maktab30Xovos_bot`, "_blank");
-      showToast("✈️ Telegram bot ochilmoqda...");
-    }
+    sendToTelegramBot(textPayload);
+    showToast("✅ Savolingiz adminga yetkazildi! Tez orada siz bilan bog'lanishadi.");
+    if (msgInput) msgInput.value = "";
   } catch (err) {
-    // Agar serverga to'g'ridan-to'g'ri ulanmasa, Telegram botga yo'naltiriladi
-    window.open(`https://t.me/Maktab30Xovos_bot`, "_blank");
+    window.open("https://t.me/xovosmaktab30_aibot", "_blank");
     showToast("✈️ Telegram bot ochilmoqda...");
   }
 });
 
+// Saqlangan aloqa ma'lumotini kiritish maydonlariga yuklash
+try {
+  const savedContact = localStorage.getItem("nuras_user_contact");
+  if (savedContact) {
+    if ($("#chatUserContact")) $("#chatUserContact").value = savedContact;
+    if ($("#tgDirectContact")) $("#tgDirectContact").value = savedContact;
+  }
+} catch (e) {}

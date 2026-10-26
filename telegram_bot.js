@@ -1,26 +1,31 @@
 /**
  * 30-MAKTAB — RASMIY TELEGRAM BOT VA SAYT INTEGRATSIYASI
- * Bot: @Maktab30Xovos_bot
- * Token: 8974507387:AAFfMzfxlaNS15I_zB1mz0qwbL3TSwLKoTs
- * Bot ID: 8974507387
+ * Bot: @xovosmaktab30_aibot
+ * Token: 8720811902:AAH-cWg0o77k9B6OrRwAVhlkJ0C9Wgv626w
+ * Admin / Chat ID: 6125589125
+ * Bot ID: 8720811902
  */
 
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const BOT_TOKEN = '8974507387:AAFfMzfxlaNS15I_zB1mz0qwbL3TSwLKoTs';
+const BOT_TOKEN = '8720811902:AAH-cWg0o77k9B6OrRwAVhlkJ0C9Wgv626w';
+const ADMIN_CHAT_ID = '6125589125';
 const API_URL = `https://api.telegram.org/bot${BOT_TOKEN}`;
 const SUBSCRIBERS_FILE = path.join(__dirname, 'bot_subscribers.json');
 
 // Obunachilar va adminlar ro'yxatini yuklash
-let subscribers = new Set();
+let subscribers = new Set([ADMIN_CHAT_ID]);
 try {
   if (fs.existsSync(SUBSCRIBERS_FILE)) {
     const raw = fs.readFileSync(SUBSCRIBERS_FILE, 'utf8');
     const arr = JSON.parse(raw);
-    if (Array.isArray(arr)) subscribers = new Set(arr);
+    if (Array.isArray(arr)) {
+      arr.forEach(id => subscribers.add(String(id)));
+    }
   }
+  subscribers.add(ADMIN_CHAT_ID);
 } catch (e) {
   console.warn("Subscribers yuklashda ogohlantirish:", e.message);
 }
@@ -49,7 +54,6 @@ function saveReview(item) {
     fs.writeFileSync(REVIEWS_FILE, JSON.stringify(reviewsList, null, 2), 'utf8');
   } catch (e) {}
 }
-
 
 // Maktab o'qituvchilari va ma'lumotlari bazasi
 const SCHOOL_DATA = {
@@ -147,7 +151,7 @@ function getMainKeyboard() {
       [{ text: "📐 Matematika ustozlari" }, { text: "📜 Tarix ustozlari" }],
       [{ text: "🎓 Maktab direktori" }, { text: "⏰ Dars jadvali" }],
       [{ text: "🏆 Chempion o‘quvchilar" }, { text: "⭐ Sayt baholari va fikrlar" }],
-      [{ text: "🎙 VoiceLab & AI ovozi" }, { text: "📍 Maktab manzili" }],
+      [{ text: "✍️ Ma'muriyatga savol yo'llash" }, { text: "📍 Maktab manzili" }],
       [{ text: "🌐 Maktab veb-sayti" }]
     ],
     resize_keyboard: true,
@@ -159,7 +163,7 @@ function getMainKeyboard() {
 function getInlineSiteKeyboard() {
   return {
     inline_keyboard: [
-      [{ text: "🌐 30-Maktab Rasmiy Saytini Ochish", url: "https://t.me/Maktab30Xovos_bot" }]
+      [{ text: "🌐 30-Maktab Rasmiy Saytini Ochish", url: "https://t.me/xovosmaktab30_aibot" }]
     ]
   };
 }
@@ -210,9 +214,9 @@ function answerQuery(text) {
       SCHOOL_DATA.champions.join("\n\n");
   }
 
-  // 6) AI ovozi / VoiceLab / ElevenLabs
-  if (q.includes("ovoz") || q.includes("voicelab") || q.includes("elevenlabs") || q.includes("sintez")) {
-    return `🎙 *Sun’iy Intellekt Ovozi (VoiceLab & ElevenLabs):*\n\nMaktabimiz veb-saytida:\n1. **VoiceLab Speech** — siz taqdim etgan ultra-sifatli tabiiy o‘zbekcha AI nutq (\`voicelab-speech (4).wav\`).\n2. **ElevenLabs Voice-Lab** — neyrotarmoq ovoz generatori (https://elevenlabs.io/app/voice-lab).\n3. Dars qo‘ng‘iroqlari va e'lonlar chiroyli ovozda o‘qiladi!`;
+  // 6) Ma'muriyatga savol
+  if (q.includes("savol") || q.includes("murojaat") || q.includes("yo'llash") || q.includes("ma'muriyat")) {
+    return `✍️ *Maktab ma'muriyatiga savol yo'llash:*\n\nSavolingizni, ismingiz va telefon raqamingizni (yoki @username) shu yerga yozib qoldiring. Ma'muriyatimiz tez orada ko'rib chiqib, to'g'ridan-to'g'ri sizga javob qaytaradi!`;
   }
 
   // 7) Manzil
@@ -222,13 +226,12 @@ function answerQuery(text) {
 
   // 8) Sayt
   if (q.includes("sayt") || q.includes("veb") || q.includes("portal")) {
-    return `🌐 *30-Maktab rasmiy veb-sayti:*
-Saytimizda jonli qo‘ng‘iroq, VoiceLab ovozli e'lonlari, YouTube pleyer, fanlar bo‘yicha o‘qituvchilar filtri va NURAS AI yordamchisi faoliyat yuritadi!`;
+    return `🌐 *30-Maktab rasmiy veb-sayti:*\nSaytimizda jonli dars jadvali, fan o'qituvchilari, audio qo'ng'iroq va NURAS AI yordamchisi faoliyat yuritadi!`;
   }
 
   // 9) Salomlashuv
   if (q.includes("salom") || q.includes("assalom")) {
-    return `Assalomu alaykum! 😊\n30-maktabning rasmiy axborot botiga xush kelibsiz. Qanday savolingiz bo‘lsa, quyidagi tugmalardan birini bosing yoki savolingizni yozing!`;
+    return `Assalomu alaykum! 😊\n30-maktabning rasmiy axborot botiga xush kelibsiz. Qanday savolingiz bo‘lsa, bemalol yozing yoki quyidagi tugmalardan birini bosing!`;
   }
 
   // 10) Arifmetika
@@ -245,7 +248,7 @@ Saytimizda jonli qo‘ng‘iroq, VoiceLab ovozli e'lonlari, YouTube pleyer, fanl
     return `🔢 *Hisoblash natijasi:*\n\`${a} ${op} ${b} = ${ans}\``;
   }
 
-  return `🤖 *30-Maktab Yordamchi Boti:*\n\nSiz yozgan savol: _"${text}"_.\n\nMaktab o‘qituvchilari (matematika, tarix), dars jadvali, chempionlar yoki dars soatlari haqida bilish uchun menyu tugmalaridan foydalanishingiz mumkin!`;
+  return `🤖 *30-Maktab Yordamchi Boti:*\n\nSiz yozgan savol: _"${text}"_.\n\nSavolingiz maktab ma'muriyatiga yetkazildi. Shuningdek menyu orqali o'qituvchilar, dars jadvali va chempionlar haqida darhol ma'lumot olishingiz mumkin!`;
 }
 
 // Long Polling orqali yangilanishlarni olish
@@ -261,25 +264,95 @@ async function pollUpdates() {
     if (data.ok && Array.isArray(data.result)) {
       for (const update of data.result) {
         offset = update.update_id + 1;
-        if (update.message && update.message.text) {
-          const chatId = update.message.chat.id;
-          const userText = update.message.text.trim();
-          const userName = update.message.from.first_name || "Foydalanuvchi";
+        if (!update.message) continue;
 
-          // Obunachilar bazasiga qo'shish
-          if (!subscribers.has(chatId)) {
-            subscribers.add(chatId);
-            saveSubscribers();
+        const chatId = String(update.message.chat.id);
+        const from = update.message.from || {};
+        const userFirstName = from.first_name || '';
+        const userLastName = from.last_name || '';
+        const fullName = (userFirstName + ' ' + userLastName).trim() || 'Foydalanuvchi';
+        const userUsername = from.username ? '@' + from.username : null;
+
+        // Obunachilar bazasiga qo'shish
+        if (!subscribers.has(chatId)) {
+          subscribers.add(chatId);
+          saveSubscribers();
+        }
+
+        // 1) TELEFON RAQAM YUBORILGANDA
+        if (update.message.contact) {
+          const phone = update.message.contact.phone_number;
+          await sendMessage(chatId, "✅ Rahmat! Telefon raqamingiz qabul qilindi. Tez orada maktab ma'muriyati siz bilan bog'lanadi.", getMainKeyboard());
+          await sendMessage(ADMIN_CHAT_ID, `📱 *Yangi telefon raqam qoldirildi:*\n👤 *Foydalanuvchi:* ${fullName} (${userUsername || 'username yoq'})\n📞 *Telefon:* \`+${phone}\`\n🆔 *Foydalanuvchi ID:* \`${chatId}\``);
+          continue;
+        }
+
+        if (!update.message.text) continue;
+        const userText = update.message.text.trim();
+        console.log(`[Telegram] ${fullName} (${chatId}): ${userText}`);
+
+        // 2) ADMIN JAVOB BERISH FUNKSIYASI (ADMIN -> USER)
+        if (chatId === String(ADMIN_CHAT_ID)) {
+          // A) Agar Admin xabarga "Reply" qilgan bo'lsa:
+          if (update.message.reply_to_message && update.message.reply_to_message.text) {
+            const quoted = update.message.reply_to_message.text;
+            const idMatch = quoted.match(/Foydalanuvchi ID:\s*`?(\d+)`?/i) || quoted.match(/ID:\s*`?(\d+)`?/i);
+            if (idMatch) {
+              const targetUserId = idMatch[1];
+              const answerText = `👨‍🏫 *30-Maktab ma'muriyatidan shaxsiy javob:*\n\n${userText}\n\n_Agar yana savollaringiz bo'lsa, bemalol yozishingiz mumkin!_`;
+              const sendRes = await sendMessage(targetUserId, answerText, getMainKeyboard());
+              if (sendRes && sendRes.ok) {
+                await sendMessage(ADMIN_CHAT_ID, `✅ *Javobingiz foydalanuvchiga muvaffaqiyatli yetkazildi!*\n🆔 Foydalanuvchi: \`${targetUserId}\``);
+              } else {
+                await sendMessage(ADMIN_CHAT_ID, `⚠️ Xatolik: Foydalanuvchiga javob yuborib bo'lmadi (u botni bloklagan bo'lishi mumkin).`);
+              }
+              continue;
+            }
           }
 
-          console.log(`[Telegram] ${userName} (${chatId}): ${userText}`);
+          // B) /javob <ID> <matn> yoki /reply <ID> <matn>
+          const javobMatch = userText.match(/^\/(?:javob|reply)\s+(\d+)\s+([\s\S]+)$/i);
+          if (javobMatch) {
+            const targetUserId = javobMatch[1];
+            const answerBody = javobMatch[2].trim();
+            const answerText = `👨‍🏫 *30-Maktab ma'muriyatidan shaxsiy javob:*\n\n${answerBody}\n\n_Agar yana savollaringiz bo'lsa, bemalol yozishingiz mumkin!_`;
+            const sendRes = await sendMessage(targetUserId, answerText, getMainKeyboard());
+            if (sendRes && sendRes.ok) {
+              await sendMessage(ADMIN_CHAT_ID, `✅ *Javobingiz foydalanuvchiga muvaffaqiyatli yetkazildi!*\n🆔 Foydalanuvchi: \`${targetUserId}\``);
+            } else {
+              await sendMessage(ADMIN_CHAT_ID, `⚠️ Xatolik: Foydalanuvchiga javob yuborib bo'lmadi.`);
+            }
+            continue;
+          }
+        }
 
-          if (userText === '/start') {
-            const welcomeText = `Assalomu alaykum, *${userName}*! 👋\n\nMen Xovos tumani **30-maktab**ning rasmiy sun’iy intellekt va axborot botiman (@Maktab30Xovos_bot).\n\nQuyidagi menyu orqali maktabimiz o‘qituvchilari (matematika, tarix), dars jadvali va chempion o‘quvchilar haqida to‘liq ma’lumot olishingiz mumkin.`;
-            await sendMessage(chatId, welcomeText, getMainKeyboard());
-          } else {
-            const reply = answerQuery(userText);
-            await sendMessage(chatId, reply, getMainKeyboard());
+        // 3) ODDIY FOYDALANUVCHIDAN KELGAN XABAR
+        if (userText === '/start') {
+          const welcomeText = `Assalomu alaykum, *${fullName}*! 👋\n\nMen Xovos tumani **30-maktab**ning rasmiy axborot va sun'iy intellekt botiman (@xovosmaktab30_aibot).\n\nQuyidagi menyu orqali maktab o'qituvchilari, dars jadvali, yutuqlar haqida bilib olishingiz yoki maktab ma'muriyatiga to'g'ridan-to'g'ri savol yo'llashingiz mumkin.`;
+          await sendMessage(chatId, welcomeText, getMainKeyboard());
+        } else {
+          // Foydalanuvchiga botning avtomatik javobini qaytarish
+          const reply = answerQuery(userText);
+          await sendMessage(chatId, reply, getMainKeyboard());
+          
+          // Agar xabar Admindan emas, boshqa foydalanuvchidan bo'lsa — Adminga to'liq bog'lanish ma'lumotlari bilan yetkazish!
+          if (chatId !== String(ADMIN_CHAT_ID)) {
+            const contactHandle = userUsername ? `💬 Telegram: https://t.me/${userUsername.replace('@', '')}` : "Telegram username yo'q";
+            const adminNotify = `📩 *Botga yangi savol keldi:*
+
+👤 *Foydalanuvchi:* ${fullName}
+🔗 *Username:* ${userUsername || 'Mavjud emas'}
+🆔 *Foydalanuvchi ID:* \`${chatId}\`
+❓ *Savol:* "${userText}"
+⏱ *Vaqt:* ${new Date().toLocaleString('uz-UZ')}
+
+👉 *Bog'lanish:* ${contactHandle}
+
+💬 *Foydalanuvchiga javob qaytarish uchun:*
+1) Ushbu xabarga **"Reply" (Javob berish)** qiling va matningizni yozing;
+2) Yoki: \`/javob ${chatId} Sizning javobingiz\``;
+
+            await sendMessage(ADMIN_CHAT_ID, adminNotify);
           }
         }
       }
@@ -310,17 +383,19 @@ const server = http.createServer((req, res) => {
       try {
         const data = JSON.parse(body || '{}');
         const name = data.name || 'Mehmon';
+        const contact = data.contact || '';
         const msg = data.message || '';
-        console.log(`[Saytdan Botga] ${name}: ${msg}`);
+        console.log(`[Saytdan Botga] ${name} (${contact}): ${msg}`);
 
         // Bahoni doimiy faylga saqlash
         saveReview({
           name: name,
+          contact: contact,
           message: msg,
           date: new Date().toISOString()
         });
 
-        const notifyText = `📩 **Saytdan yangi xabar / baho keldi (30-Maktab):**\n👤 **Kimdan:** ${name}\n💬 **Xabar:** ${msg}\n⏱ ${new Date().toLocaleString('uz-UZ')}`;
+        const notifyText = `📩 **Saytdan yangi murojaat (30-Maktab):**\n👤 **Kimdan:** ${name}\n📞 **Bog'lanish:** ${contact || 'Kiritilmagan'}\n💬 **Xabar:** ${msg}\n⏱ ${new Date().toLocaleString('uz-UZ')}`;
         await broadcastToSubscribers(notifyText);
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -340,7 +415,7 @@ const server = http.createServer((req, res) => {
   }
 
   res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({ status: "running", bot: "@Maktab30Xovos_bot", subscribers: subscribers.size, reviews: reviewsList.length }));
+  res.end(JSON.stringify({ status: "running", bot: "@xovosmaktab30_aibot", subscribers: subscribers.size, reviews: reviewsList.length }));
 });
 
 const PORT = 3001;
@@ -350,8 +425,9 @@ server.listen(PORT, () => {
 
 console.log("=========================================");
 console.log("30-Maktab Telegram Boti faol!");
-console.log("Bot username: @Maktab30Xovos_bot");
-console.log("Bot ID: 8974507387");
+console.log("Bot username: @xovosmaktab30_aibot");
+console.log("Admin ID: 6125589125");
+console.log("Bot ID: 8720811902");
 console.log("=========================================");
 
 pollUpdates();
