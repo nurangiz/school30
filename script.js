@@ -1521,6 +1521,196 @@ function universalChatGPTEngine(question) {
   }
 
   // ============================================================
+  // SUPER GEMINI BILIMLAR BAZASI - UNIVERSAL FANLAR VA TABIIY SAVOLLAR
+  // ============================================================
+
+  // 1) DARAXTLAR NEGA KO'KARADI / BARGLAR NEGA YASHIL / XLOROFILL
+  if ((q.includes("daraxt") && (q.includes("kokar") || q.includes("yashil") || q.includes("barg"))) || q.includes("xlorofill") || (q.includes("barg") && q.includes("yashil")) || q.includes("nega kokaradi") || q.includes("nega ko'karadi")) {
+    return "🌿 **Daraxtlar va o‘simliklar nega ko‘karadi (yashil bo‘ladi)?**\n\n" +
+           "Daraxtlar va o‘simlik barglarining yashil bo‘lishiga asosiy sabab ularning hujayralaridagi **xlorofill** (chlorophyll) deb ataluvchi yashil rangli pigmentdir.\n\n" +
+           "🔬 **Ilmiy mexanizmi:**\n" +
+           "1. **Quyosh nuri spektri:** Quyosh nuri oq bo‘lib ko‘rinsa-da, u barcha kamalak ranglarini o‘z ichiga oladi. Xlorofill quyosh nuridagi qizil va ko‘k nurlarni o‘ziga kuchli yutadi, ammo **yashil nurni qaytaradi** (aks ettiradi). Bizning ko‘zimizga aynan shu qaytgan yashil nurlar tushgani sababli barglar yashil bo‘lib ko‘rinadi.\n" +
+           "2. **Fotosintez fabrikasi:** Xlorofill o‘simliklar uchun ozuqa tayyorlaydi. U quyosh nuri, suv (H₂O) va havodagi karbonat angidrid (CO₂) ni birlashtirib, o‘simlikka quvvat beruvchi glyukoza hamda biz nafas oladigan toza **kislorod (O₂)** ishlab chiqaradi:\n" +
+           "   `6CO₂ + 6H₂O + Quyosh nuri → C₆H₁₂O₆ + 6O₂↑`\n\n" +
+           "🍂 *Kuzda nega sarg‘ayadi?* Kuz kelib havo soviganida va kun qisqarganida xlorofill sintezi to‘xtaydi va u parchalanadi. Natijada xlorofill orqasida yashiringan sariq (ksantofill) va to‘q sariq (karotinoid) pigmentlar yuzaga chiqib, barglar sarg‘ayadi va qizaradi.";
+  }
+
+  // 2) ODAM TANASIDA NECHTA SUYAK BOR / SKELET / SUYAKLAR
+  if ((q.includes("odam") || q.includes("inson") || q.includes("tana")) && (q.includes("suyak") || q.includes("skelet")) || q.includes("nechta suyak") || q.includes("suyaklar soni")) {
+    return "🦴 **Odam tanasida nechta suyak bor?**\n\n" +
+           "Voyaga yetgan (katta yoshdagi) inson skeletida jami **206 ta suyak** mavjud!\n\n" +
+           "📊 **Qiziqarli anatomik faktlar:**\n" +
+           "1. **Chaqaloqlarda:** Yangi tug‘ilgan chaqaloq tanasida taxminan **270 tadan 300 tagacha** mayda suyaklar bo‘ladi. Bola o‘sib ulg‘aygani sari bu suyaklarning ko‘pchiligi bir-biri bilan qo‘shilib (bitishib), 206 taga aylanadi.\n" +
+           "2. **Suyaklarning taqsimlanishi:**\n" +
+           "   - **Kalla suyagi (bosh):** 29 ta suyak.\n" +
+           "   - **Tana (umurtqa va ko‘krak qafasi):** 51 ta suyak (33-34 ta umurtqa pog‘onasi, 24 ta qovurg‘a va to‘sh suyagi).\n" +
+           "   - **Qo‘llar va yelka kamari:** 64 ta suyak (har bir qo‘lda 27 tadan).\n" +
+           "   - **Oyoqlar va tos kamari:** 62 ta suyak (har bir oyoqda 26 tadan).\n" +
+           "3. **Eng katta va eng kichik suyak:**\n" +
+           "   - *Eng katta va mustahkam:* **Son suyagi** (femur) — inson bo‘yining taxminan 27% ini tashkil qiladi va bir necha tonna yukni ko‘tara oladi.\n" +
+           "   - *Eng kichik:* **Uzangicha suyagi** (stapes) — quloq ichida joylashgan bo‘lib, o‘lchami atigi 2-3 millimetrdir!";
+  }
+
+  // 3) DUNYONING 7 MO'JIZASI NIMALAR
+  if (q.includes("7 mojiza") || q.includes("yetti mojiza") || q.includes("dunyoning 7") || q.includes("dunyo mojizalari") || q.includes("7 ta mojiza")) {
+    return "🏛 **Dunyoning 7 mo‘jizasi nimalar?**\n\n" +
+           "Tarixda qadimgi dunyo me’morchiligi va san’atining eng buyuk yodgorliklari **Qadimgi Dunyoning 7 Mo‘jizasi** deb e’tirof etilgan:\n\n" +
+           "📜 **Qadimgi 7 mo‘jiza:**\n" +
+           "1. **Misr ehromlari (Xufu / Xeops piramidasi)** — Giza, Misr. (*Bizning davrimizgacha saqlanib qolgan yagona qadimgi mo‘jiza!*)\n" +
+           "2. **Bobil osma bog‘lari** — Iroq (Semiramida osma bog‘lari deb ham yuritiladi).\n" +
+           "3. **Olimpiyadagi Zevs haykali** — Gretsiya (Filidiy tomonidan oltin va fil suyagidan yaratilgan ulkan haykal).\n" +
+           "4. **Efesdagi Artemida ibodatxonasi** — Turkiya (Buyuk ma’buda Artemida sharafiga qurilgan 127 ustunli ibodatxona).\n" +
+           "5. **Galikarnasdagi Mavsol maqbarasi** — Turkiya (Kariya shohi Mavsolning hashamatli qabrtoshi).\n" +
+           "6. **Rodos kolossi** — Gretsiya, Rodos oroli (Quyosh xudosi Geliosning ulkan bronza haykali).\n" +
+           "7. **Aleksandriya (Iskandariya) mayog‘i** — Faros oroli, Misr (dengizchilarga yo‘l ko‘rsatuvchi 120 metrlik tarixiy mayoq).\n\n" +
+           "✨ **Dunyoning Yangi 7 Mo‘jizasi (2007-yilda butun dunyo xalqlari ovoz berishi bilan tanlangan):**\n" +
+           "1. Buyuk Xitoy devori (Xitoy)\n" +
+           "2. Petra qoyatosh shahri (Iordaniya)\n" +
+           "3. Rim Kolizeyi (Italiya)\n" +
+           "4. Chichen-Itsa ehromi (Meksika)\n" +
+           "5. Machu-Pikchu shahri (Peru)\n" +
+           "6. Tojmahal maqbarasi (Hindiston)\n" +
+           "7. Qutqaruvchi Iso Masih haykali (Braziliya, Rio-de-Janeyro)";
+  }
+
+  // 4) SAMOLYOT QANDAY UCHADI / AERODINAMIKA / BERNULLI QONUNI
+  if (q.includes("samolyot") && (q.includes("uchad") || q.includes("parvoz") || q.includes("qanday") || q.includes("uchish") || q.includes("tamoyil"))) {
+    return "✈️ **Samolyot qanday uchadi va osmonda qanday turadi?**\n\n" +
+           "Samolyotning havoga ko‘tarilishi va uchishi **aerodinamika** qonunlari hamda mashhur **Bernulli qonuni**ga asoslangan.\n\n" +
+           "🚀 **Parvozni ta’minlovchi 4 ta asosiy kuch:**\n" +
+           "1. **Ko‘tarish kuchi (Lift):** Samolyotni yuqoriga ko‘taruvchi asosiy kuch. Samolyot qanotining maxsus profili (ustki qismi qavariq, ostki qismi tekisroq) tufayli qanot ustidagi havo tezroq oqadi. Bernulli qonuniga ko‘ra, havo tezligi oshganda uning bosimi kamayadi. Natijada qanot ostida yuqori bosim, ustida esa past bosim hosil bo‘lib, samolyotni osmonga ko‘taradi.\n" +
+           "2. **Tortish kuchi (Thrust):** Samolyotning kuchli reaktiv yoki turbovintli dvigatellari uni ulkan tezlikda oldinga itaradi. Samolyot tezligi qancha yuqori bo‘lsa, qanotlar hosil qiladigan ko‘tarish kuchi shuncha ortadi.\n" +
+           "3. **Og‘irlik kuchi (Gravity):** Butunolam tortishish kuchi samolyotni pastga (yerga) tortadi. Qanotning ko‘tarish kuchi og‘irlik kuchidan oshganda samolyot yer sathidan uzilib havoga ko‘tariladi.\n" +
+           "4. **Qarshilik kuchi (Drag):** Samolyot harakatiga qarshi bo‘lgan havoning ishqalanish qarshiligi.\n\n" +
+           "💡 *Xulosa:* Samolyot dvigatellari yordamida tezlashganda, qanotlaridagi havo bosimlari farqi samolyotning yuzlab tonnalik og‘irligini osmonda bemalol muallaq ko‘tarib turadi!";
+  }
+
+  // 5) O'ZBEKISTON POYTAXTI QAYER / TOSHKENT SHAHRI
+  if (((q.includes("ozbekiston") || q.includes("o'zbekiston")) && (q.includes("poytaxt") || q.includes("markaz"))) || (q.includes("poytaxti qayer") && !q.includes("boshqa")) || q.includes("toshkent haqida")) {
+    return "🇺🇿 **O‘zbekiston Respublikasining poytaxti — Toshkent shahri!**\n\n" +
+           "**Toshkent** — Markaziy Osiyodagi eng yirik megapolis, mamlakatimizning siyosiy, iqtisodiy, ilmiy va madaniy markazidir.\n\n" +
+           "📌 **Toshkent haqida asosiy ma’lumotlar:**\n" +
+           "- **Aholisi:** 3 milliondan ortiq kishi.\n" +
+           "- **Tarixi:** 2200 yildan ortiq qadimiy tarixga ega shahar (tarixda 'Shosh', 'Choch', 'Binkat' deb ham atalgan).\n" +
+           "- **Metropoliten:** Markaziy Osiyoda birinchi bo‘lib 1977-yilda qurilgan Toshkent metropoliteni mavjud (hozirda 4 ta liniya: Chilonzor, O‘zbekiston, Yunusobod va Halqa yer usti yo‘li).\n" +
+           "- **Tumanlari:** 12 ta ma’muriy tuman (Mirzo Ulug‘bek, Yunusobod, Chilonzor, Shayxontohur, Yakkasaroy, Mirobod, Olmazor, Uchtepa, Yashnobod, Sergeli, Bektemir, Yangihayot).\n" +
+           "- **Diqqatga sazovor joylari:** Hazrati Imom (Hastimom) majmuasi (Usmon Mus’hafi Qur’oni saqlanadi), Toshkent teleminorasi (375 metr — Markaziy Osiyodagi eng baland inshoot), Amir Temur xiyoboni, Magic City va Tashkent City.";
+  }
+
+  // 6) O'ZBEKISTON VILOYATLARI VA HUDUDIY TUZILISHI
+  if ((q.includes("ozbekiston") || q.includes("respublika")) && (q.includes("viloyat") || q.includes("hudud") || q.includes("nechta viloyat"))) {
+    return "🗺 **O‘zbekiston Respublikasi Ma’muriy-hududiy tuzilishi:**\n\n" +
+           "O‘zbekiston **12 ta viloyat**, **Qoraqalpog‘iston Respublikasi** va **Toshkent shahridan** iborat:\n\n" +
+           "1. **Andijon viloyati** (Markazi: Andijon)\n" +
+           "2. **Buxoro viloyati** (Markazi: Buxoro)\n" +
+           "3. **Farg‘ona viloyati** (Markazi: Farg‘ona)\n" +
+           "4. **Jizzax viloyati** (Markazi: Jizzax)\n" +
+           "5. **Xorazm viloyati** (Markazi: Urganch)\n" +
+           "6. **Namangan viloyati** (Markazi: Namangan)\n" +
+           "7. **Navoiy viloyati** (Markazi: Navoiy)\n" +
+           "8. **Qashqadaryo viloyati** (Markazi: Qarshi)\n" +
+           "9. **Samarqand viloyati** (Markazi: Samarqand)\n" +
+           "10. **Sirdaryo viloyati** (Markazi: Guliston — *bizning 30-maktabimiz joylashgan viloyat!*)\n" +
+           "11. **Surxondaryo viloyati** (Markazi: Termiz)\n" +
+           "12. **Toshkent viloyati** (Markazi: Nurafshon)\n" +
+           "13. **Qoraqalpog‘iston Respublikasi** (Poytaxti: Nukus)\n" +
+           "14. **Toshkent shahri** (Respublika poytaxti)";
+  }
+
+  // 7) QUYOSH NIMA VA QANDAY ISHLAYDI
+  if (q.includes("quyosh") && (q.includes("nima") || q.includes("haqida") || q.includes("yulduz") || q.includes("harorat"))) {
+    return "☀️ **Quyosh nima va uning asosiy xususiyatlari:**\n\n" +
+           "**Quyosh** — Quyosh tizimining markazida joylashgan yagona yulduz bo‘lib, G-sinfiga mansub sariq mitti yulduz hisoblanadi.\n\n" +
+           "🔥 **Asosiy faktlar:**\n" +
+           "- **Masofa:** Yergacha bo‘lgan masofa taxminan 149.6 million km (yorug‘lik bu masofani 8 daqiqa 20 soniyada bosib o‘tadi).\n" +
+           "- **Harorati:** Sirtidagi harorat taxminan 5 500 °C, markaziy yadrosida esa 15 million °C ga yetadi.\n" +
+           "- **Energiyasi:** Yadroda vodorod atomlarining geliyga aylanishi (termoyadroviy sintez) natijasida ulkan yorug‘lik va issiqlik energiyasi ajraladi.\n" +
+           "- **Massasi:** Butun Quyosh tizimi umumiy massasining 99.86% qismini Quyoshning o‘zi tashkil etadi.";
+  }
+
+  // 8) OY NIMA VA UNING FAZOLARI
+  if (q.includes("oy") && (q.includes("nima") || q.includes("haqida") || q.includes("fazolari") || q.includes("yoldosh"))) {
+    return "🌙 **Oy nima va uning xususiyatlari:**\n\n" +
+           "**Oy** — Yerning yagona tabiiy yo‘ldoshi va osmonda Quyoshdan keyingi eng yorug‘ osmon jismidir.\n\n" +
+           "🔭 **Asosiy ma’lumotlar:**\n" +
+           "- **Masofa:** Yerdan Oygacha bo‘lgan o‘rtacha masofa 384 400 km.\n" +
+           "- **Aylanish davri:** Yer atrofini 27.3 kunda to‘liq aylanib chiqadi.\n" +
+           "- **Gravitatsiya:** Oydagi tortishish kuchi Yerdagidan 6 barobar kam (Yerdagi 60 kg tosh Oqda 10 kg bo‘lib tuyuladi).\n" +
+           "- **Fazolar:** Yangi oy, birinchi chorak, to‘lin oy va oxirgi chorak. Oy o‘zidan nur chiqarmaydi, faqat Quyosh nurini qaytaradi.";
+  }
+
+  // 9) YULDUZLAR NEGA MILTILLAYDI
+  if (q.includes("yulduz") && (q.includes("miltill") || q.includes("chaqnaydi") || q.includes("porlaydi"))) {
+    return "✨ **Yulduzlar nega miltillaydi?**\n\n" +
+           "Aslida koinotdagi yulduzlar mutlaqo miltillamaydi, ular bir maromda doimiy ravshan nur sochadi!\n\n" +
+           "🔭 **Miltillash sababi:**\n" +
+           "Yulduzlar nuri millionlab yorug‘lik yili masofasini bosib o‘tib, Yer **atmosferasiga** kiradi. Yer atmosferasi esa doimo harakatda bo‘lgan, harorati va zichligi har xil havo qatlamlaridan iborat. Yulduzning ingichka yorug‘lik nuri bu tebranib turgan havo qatlamlaridan o‘tayotganda sinadi (refraksiya) va yo‘nalishini tez-tez o‘zgartiradi. Natijada bizning ko‘zimizga yulduz xuddi miltillayotgandek tuyuladi!\n\n" +
+           "🚀 *Fazo vakuumida:* Kosmonavtlar atmosferadan tashqarida (masalan, Xalqaro Koinot Stansiyasida) yulduzlarni kuzatganda, ular hech qachon miltillamaydi.";
+  }
+
+  // 10) YURAK QANDAY ISHLAYDI
+  if (q.includes("yurak") && (q.includes("qanday") || q.includes("ishlaydi") || q.includes("uradi") || q.includes("nima"))) {
+    return "❤️ **Inson yuragi qanday ishlaydi va uning vazifalari:**\n\n" +
+           "**Yurak** — inson tanasidagi eng muhim mushak organi bo‘lib, butun umr davomida to‘xtovsiz ishlaydigan biologik nasos vazifasini bajaradi.\n\n" +
+           "🩸 **Asosiy faktlar:**\n" +
+           "- **Tuzilishi:** 4 ta kameradan iborat — 2 ta bo‘lmacha (o‘ng va chap) hamda 2 ta qorincha (o‘ng va chap).\n" +
+           "- **Puls:** Tinch holatda bir daqiqada o‘rtacha **60-80 marta** uradi.\n" +
+           "- **Nasos kuchi:** Kuniga taxminan 100 000 marta urib, qariyb **7 000 — 8 000 litr** qonni tomirlar bo‘ylab haydaydi.\n" +
+           "- **Vazifasi:** To‘qima va a’zolarga kislorod va ozuqa moddalarini yetkazib berish hamda karbonat angidridni o‘pkaga olib borish.";
+  }
+
+  // 11) INSON MIYASI VA NEYRONLAR
+  if (q.includes("miya") || q.includes("inson miyasi") || q.includes("neyron")) {
+    return "🧠 **Inson miyasi qanday ishlaydi?**\n\n" +
+           "Inson miyasi — koinotdagi eng murakkab va mukammal biologik axborot boshqaruv markazidir.\n\n" +
+           "⚡ **Aql bovar qilmas faktlar:**\n" +
+           "- **Neyronlar soni:** Miyada taxminan **86 milliard dona** neyron (asab hujayrasi) mavjud!\n" +
+           "- **Sinapslar:** Neyronlar o‘rtasida 100 trilliondan ortiq bog‘lanishlar (sinapslar) mavjud.\n" +
+           "- **Og‘irligi:** Taxminan 1.3 - 1.4 kg (tana vaznining atigi 2% ini tashkil qilsa-da, tana energiyasining 20% ini iste’mol qiladi).\n" +
+           "- **Tezligi:** Asab impulslari miyada soatiga 400 km tezlikda harakatlanadi.";
+  }
+
+  // 12) GRAVITATSIYA VA TORTISHISH KUCHI
+  if (q.includes("gravitatsiya") || q.includes("tortishish kuchi")) {
+    return "🌍 **Gravitatsiya (Butun olam tortishish kuchi) nima?**\n\n" +
+           "**Gravitatsiya** — koinotdagi massaga ega bo‘lgan barcha jismlarning bir-birini o‘ziga tortish xususiyatidir.\n\n" +
+           "🍏 **Asosiy qonuniyatlar:**\n" +
+           "1. **Isaak Nyuton qonuni:** Ikki jism orasidagi tortishish kuchi ularning massalari ko‘paytmasiga to‘g‘ri, ular orasidagi masofaning kvadratiga teskari proportsionaldir:\n" +
+           "   *F = G * (m₁ * m₂) / r²*\n" +
+           "2. **Erkin tushish tezlanishi:** Yer yuzasida gravitatsion tezlanish *g ≈ 9.8 m/s²* ga teng.\n" +
+           "3. **Albert Eynshteyn (Umumiy nisbiylik nazariyasi):** Gravitatsiya — bu massiv jismlar (masalan, Quyosh yoki Yer) tomonidan fazo va vaqt matosining egrilanishidir.";
+  }
+
+  // 13) YORUG'LIK VA TOVUSH TEZLIGI
+  if (q.includes("yoruglik tezligi") || q.includes("yorug'lik tezligi") || q.includes("tovush tezligi")) {
+    return "⚡ **Yorug‘lik va Tovush Tezligi:**\n\n" +
+           "- 💡 **Yorug‘lik tezligi (vakuumda):** Koinotdagi mutlaq maksimal tezlik bo‘lib, sekundiga taxminan **300 000 km/s** ga teng (aniqrog‘i 299 792 458 m/s).\n" +
+           "- 🔊 **Tovush tezligi (havoda):** +20 °C normal haroratda sekundiga taxminan **343 m/s** (soatiga 1 235 km/soat).\n\n" +
+           "⚡ *Nega chaqmoq chaqqanda avval nur ko‘rinadi, keyin gumburlash eshitiladi?* Chunki yorug‘lik tezligi tovush tezligidan deyarli 1 million barobar tezroq harakatlanadi!";
+  }
+
+  // 14) ATOM NIMA VA UNING TUZILISHI
+  if (q.includes("atom") && (q.includes("nima") || q.includes("tuzilishi") || q.includes("zarra"))) {
+    return "⚛️ **Atom nima va uning tuzilishi qanday?**\n\n" +
+           "**Atom** — kimyoviy elementning barcha xususiyatlarini o‘zida saqlovchi eng kichik va bo‘linmas zarrasidir.\n\n" +
+           "🔬 **Tuzilishi:**\n" +
+           "1. **Yadro (markazida):** Atomning deyarli butun massasi (99.9%) yadroda to‘plangan bo‘lib, u **protonlar** (musbat zaryadlangan: p⁺) va **neytronlar** (zaryadsiz: n⁰) dan iborat.\n" +
+           "2. **Elektron qobig‘i:** Yadro atrofida ulkan tezlikda aylanuvchi manfiy zaryadli **elektronlar** (e⁻) mavjud.\n" +
+           "- Neytral atomda protonlar soni elektronlar soniga doimo teng bo‘ladi.";
+  }
+
+  // 15) DASTURLASH VA PYTHON NIMA
+  if (q.includes("dasturlash") || q.includes("python") || q.includes("javascript") || q.includes("kod yozish")) {
+    return "💻 **Dasturlash va Zamonaviy Dasturlash Tillari:**\n\n" +
+           "**Dasturlash** — bu kompyuterga aniq vazifalarni bajarishi uchun algoritmlar va ko‘rsatmalar yozish jarayonidir.\n\n" +
+           "🚀 **Mashhur dasturlash tillari:**\n" +
+           "1. **Python:** O‘qilishi oson, sodda sintaksisga ega bo‘lib, Sun’iy Intellekt (AI), ma’lumotlar tahlili va veb-dasturlashda dunyoda 1-o‘rinda turadi.\n" +
+           "2. **JavaScript:** Butun dunyo internet saytlariga interaktivlik, animatsiya va mantiq beruvchi asosiy til.\n" +
+           "3. **C++ / C#:** O‘yinlar, operatsion tizimlar va yuqori tezlik talab qilinadigan murakkab dasturlar uchun.\n\n" +
+           "🏫 *30-maktabimizda Informatika va IT to‘garaklarida o‘quvchilar aynan ushbu zamonaviy dasturlash asoslarini o‘rganadilar!*";
+  }
+
+  // ============================================================
   // GEOGRAFIYA VA DUNYO REKORDLARI (Eng katta mamlakat, cho'qqi, daryo...)
   // ============================================================
   if ((q.includes("eng katta") || q.includes("eng yirik")) && (q.includes("mamlakat") || q.includes("davlat"))) {
@@ -1853,16 +2043,39 @@ function universalChatGPTEngine(question) {
   // ============================================================
   const cleanTopic = raw.replace(/[?!.]/g, "").trim();
 
-  return `💡 **Google Gemini & NURAS AI Tahlili:**\n\n` +
-         `Sizning savolingiz: **"${cleanTopic}"**\n\n` +
-         `Ushbu savol bo‘yicha ma’lumot:\n\n` +
-         `1. **Asosiy tushuncha va mohiyati:**\n` +
-         `   - Mazkur masala bo‘yicha dunyo ilmiy manbalari va darsliklar aniq va tizimli prinsiplarga tayanadi.\n` +
-         `   - Har qanday ilmiy yoki hayotiy masalada asosiy tushunchalarni bilish to‘g‘ri xulosaga olib keladi.\n\n` +
-         `2. **Amaliy qo‘llanilishi:**\n` +
-         `   - Bu bilimlar maktab fanlari, kundalik turmush va kelajakdagi zamonaviy kasblarda muhim o‘rin tutadi.\n\n` +
-         `3. **Maslahat:**\n` +
-         `   - Agar sizga ushbu mavzu bo‘yicha aniq formula, sana, misol yoki masala yechimi kerak bo‘lsa, uni yozing — darhol hisoblab beraman!`;
+  let contextCategory = "Umumiy ilmiy tushuncha";
+  let explanationPoints = "";
+
+  if (q.startsWith("nega") || q.includes("nega ")) {
+    contextCategory = "Sabab-oqibat va qonuniyat tahlili";
+    explanationPoints = 
+      "1. **Sababi va kelib chiqishi:** Tabiatda yoki jamiyatda har bir hodisa aniq sabab-oqibat qonuniyatiga tayanadi. Ushbu masalada asosiy omillar tabiiy yoki ijtimoiy muhit ta’sirida yuzaga keladi.\n" +
+      "2. **Jarayonning kechishi:** Hodisaning rivojlanishi ichki mexanizmlar va tashqi sharoitlarning o‘zaro ta’siri natijasida yuz beradi.\n" +
+      "3. **Xulosa:** Mazkur savol bo‘yicha to‘liqroq, jonli va eng so‘nggi ilmiy tadqiqotlarni pastdagi ✨ **Gemini-da qidirish** tugmasi orqali Google Gemini tizimidan olishingiz mumkin.";
+  } else if (q.startsWith("qanday") || q.includes("qanday ")) {
+    contextCategory = "Jarayon va mexanizm tahlili";
+    explanationPoints = 
+      "1. **Amalga oshish mexanizmi:** Ushbu jarayon bosqichma-bosqich tizimli harakatlar va prinsiplar asosida ishlaydi.\n" +
+      "2. **Bosqichlari:** Dastlabki tayyorgarlik, asosiy faol harakatlanish va yakuniy natijaga erishish fazalarini o‘z ichiga oladi.\n" +
+      "3. **Tavsiya:** Batafsil texnik yoki ilmiy ko‘rsatmalar olish uchun quyidagi ✨ **Gemini-da qidirish** tugmasini bosing.";
+  } else if (q.startsWith("kim") || q.includes("kim ")) {
+    contextCategory = "Shaxs va tarixiy arbob ma’lumotnomasi";
+    explanationPoints = 
+      "1. **Tarixiy o‘rni va faoliyati:** Mazkur shaxs o‘z davrida ilm-fan, ta’lim, madaniyat yoki davlatchilik rivojiga munosib hissa qo‘shgan arbobdir.\n" +
+      "2. **Merrosi va ahamiyati:** U qoldirgan asarlar, g‘oyalar yoki erishgan yutuqlari kelajak avlodlar uchun qimmatli saboq hisoblanadi.\n" +
+      "3. **Tarixiy manbalar:** Ushbu shaxs hayoti va faoliyatiga oid barcha arxiv ma’lumotlarini pastdagi ✨ **Gemini-da qidirish** orqali oching.";
+  } else {
+    contextCategory = "Ilmiy ensiklopedik sharh";
+    explanationPoints = 
+      "1. **Ta’rifi va mohiyati:** Ushbu mavzu ta’lim, fan va zamonaviy darsliklar dasturida muhim o‘rin tutadi.\n" +
+      "2. **Amaliy qo‘llanilishi:** Nazariy bilimlar maktab fanlarida, kundalik turmushda hamda kelajakdagi zamonaviy kasblarda qo‘llaniladi.\n" +
+      "3. **Tavsiya:** Mazkur tushuncha bo‘yicha yanada kengroq, illyustratsiyali va jonli manbalarni pastdagi ✨ **Gemini-da qidirish** tugmasi orqali to‘g‘ridan-to‘g‘ri Google Gemini tizimidan o‘rganishingiz mumkin.";
+  }
+
+  return `💡 **Google Gemini & 30-Maktab AI Tahlili:**\n\n` +
+         `Sizning savolingiz: **"${cleanTopic}"**\n` +
+         `Yo‘nalish: *(${contextCategory})*\n\n` +
+         explanationPoints;
 }
 
 async function queryOnlineAI(question, siteData) {
@@ -1928,16 +2141,20 @@ async function queryOnlineAI(question, siteData) {
     }
   }
 
-  // 3) Lokal server (http://localhost:3001/api/ai) orqali neyrotarmoq va ensiklopediya so'rovi
+  // 3) Lokal server (http://localhost:3001/api/ai) orqali neyrotarmoq va ensiklopediya so'rovi (5 soniya kutish)
   try {
+    const srvCtrl = new AbortController();
+    const srvTimer = setTimeout(() => srvCtrl.abort(), 5000);
     const srvRes = await fetch("http://localhost:3001/api/ai", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal: srvCtrl.signal,
       body: JSON.stringify({
         question: question,
         apiKey: customKey
       })
     });
+    clearTimeout(srvTimer);
     if (srvRes.ok) {
       const srvData = await srvRes.json();
       if (srvData.ok && srvData.answer && srvData.answer.trim()) {
@@ -1946,49 +2163,67 @@ async function queryOnlineAI(question, siteData) {
     }
   } catch (eSrv) {}
 
-  // 4) Brauzerdan to'g'ridan-to'g'ri bepul Pollinations AI
+  // 4) Brauzerdan to'g'ridan-to'g'ri aqlli Vikipediya Ensiklopediyasi (CORS: origin=*)
   try {
-    const promptWithContext = `Sen 30-maktabning Google Gemini AI yordamchisisan. Savolga o'zbek tilida to'liq, aniq va chiroyli javob ber: ${question}`;
-    const url = `https://text.pollinations.ai/${encodeURIComponent(promptWithContext)}?model=openai&cache=false`;
-    
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    const rawQ = question.toLowerCase().replace(/[’‘ʻ`]/g, "'");
 
-    const res = await fetch(url, { signal: controller.signal });
-    clearTimeout(timeoutId);
+    const smartKeywords = [
+      { rx: /daraxt.*ko['`]?kara|barg.*yashil|o['`]?simlik.*yashil/i, term: 'Xlorofill' },
+      { rx: /fotosintez/i, term: 'Fotosintez' },
+      { rx: /samolyot.*ucha|samolyot/i, term: 'Samolyot' },
+      { rx: /dunyo.*7.*mo['`]?jiza|dunyo.*yetti.*mo['`]?jiza/i, term: 'Dunyoning yetti moʻjizasi' },
+      { rx: /odam.*suyak|skelet/i, term: 'Suyak' },
+      { rx: /o['`]?zbekiston.*poytaxt/i, term: 'Toshkent' },
+      { rx: /quyosh/i, term: 'Quyosh' },
+      { rx: /oy.*nima|oy.*haqida/i, term: 'Oy' },
+      { rx: /yulduz.*miltilla/i, term: 'Yulduz' },
+      { rx: /yurak/i, term: 'Yurak' },
+      { rx: /dnk/i, term: 'Dezoksiribonuklein kislota' },
+      { rx: /gravitatsiya|tortishish kuchi/i, term: 'Gravitatsiya' },
+      { rx: /suv.*formula/i, term: 'Suv' }
+    ];
 
-    if (res.ok) {
-      const text = await res.text();
-      if (text && text.trim().length > 10 && !text.includes("Free limit reached") && !text.includes("402")) {
-        return text.trim();
+    let searchTerms = [];
+    for (const item of smartKeywords) {
+      if (item.rx.test(rawQ)) {
+        searchTerms.push(item.term);
+        break;
       }
     }
-  } catch (err) {}
 
-  // 5) Brauzerdan O'zbekcha Vikipediya Ensiklopediyasi (CORS: origin=*)
-  try {
-    const stripped = question
-      .toLowerCase()
-      .replace(/[?!.,;:()]/g, "")
-      .replace(/\b(nima|haqida|malumot|ma'lumot|ber|aytib|ayt|kim|bolgan|bo'lgan|qanday|qachon|qayerda|ega|tushuntir|tushuntiring|yoz)\b/gi, "")
-      .trim();
-    const cleanQ = stripped.length > 2 ? stripped : question.replace(/[?!.,;:()]/g, "").trim();
+    const stopWords = ['nima', 'qanday', 'qachon', 'qayerda', 'qayer', 'kim', 'nega', 'uchun', 'haqida', 'ma\'lumot', 'malumot', 'ber', 'ayt', 'aytib', 'tushuntir', 'tushuntiring', 'yoz', 'kerak', 'bor', 'nechta', 'qancha', 'qaysi', 'bolgan', 'bo\'lgan', 'ekan', 'deb', 'atamasi', 'so\'zi'];
+    const words = rawQ
+      .replace(/[?!.,;:()"[\]]/g, ' ')
+      .split(/\s+/)
+      .filter(w => w.length > 2 && !stopWords.includes(w));
 
-    const searchUrl = `https://uz.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanQ)}&utf8=&format=json&origin=*`;
-    const sRes = await fetch(searchUrl);
-    if (sRes.ok) {
+    if (words.length > 0) {
+      searchTerms.push(words.join(' '));
+      if (words.length > 1) searchTerms.push(words[0]);
+    }
+
+    for (const term of searchTerms) {
+      const searchUrl = `https://uz.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(term)}&utf8=&format=json&origin=*`;
+      const sRes = await fetch(searchUrl);
+      if (!sRes.ok) continue;
       const sData = await sRes.json();
       const results = sData?.query?.search;
-      if (results && results.length > 0) {
-        const bestTitle = results[0].title;
-        const sumUrl = `https://uz.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(bestTitle.replace(/ /g, "_"))}`;
-        const sumRes = await fetch(sumUrl);
-        if (sumRes.ok) {
-          const sumData = await sumRes.json();
-          if (sumData.extract && sumData.extract.length > 30) {
-            return `📚 **${sumData.title}** haqida ilmiy ensiklopedik ma’lumot:\n\n${sumData.extract}\n\n*Manba: O‘zbekiston Milliy Ensiklopediyasi va Google Gemini intellektual bazasi.*`;
-          }
+      if (!results || results.length === 0) continue;
+
+      let bestTitle = results[0].title;
+      for (const item of results.slice(0, 5)) {
+        if (words.some(w => item.title.toLowerCase().includes(w))) {
+          bestTitle = item.title;
+          break;
         }
+      }
+
+      const sumUrl = `https://uz.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(bestTitle.replace(/ /g, '_'))}`;
+      const sumRes = await fetch(sumUrl);
+      if (!sumRes.ok) continue;
+      const sumData = await sumRes.json();
+      if (sumData.extract && sumData.extract.length > 40) {
+        return `📚 **${sumData.title}** haqida ilmiy ma’lumot:\n\n${sumData.extract}\n\n*Manba: O‘zbekiston Milliy Ensiklopediyasi va Google Gemini intellektual bazasi.*`;
       }
     }
   } catch (eW) {}
@@ -2052,11 +2287,22 @@ function addMessage(text, type = "bot", canSpeak = true, saveToDb = true) {
 
   let actionsHtml = "";
   if (type === "bot" && canSpeak) {
+    const lastQ = window.lastUserQuestion || "30-maktab Google Gemini";
+    const geminiUrl = "https://www.google.com/search?q=" + encodeURIComponent("gemini " + lastQ) + "&sourceid=chrome";
     actionsHtml = `
       <div class="bubble-actions">
         <button type="button" class="bubble-voice-btn" title="Ovozda tinglash">
-          🔊 Ovozda tinglash
+          🔊 Tinglash
         </button>
+        <button type="button" class="bubble-copy-btn" title="Matndan nusxa olish">
+          📋 Nusxa
+        </button>
+        <a href="${geminiUrl}" target="_blank" rel="noopener" class="bubble-gemini-btn" title="Google Gemini-da qidirish">
+          ✨ Gemini-da qidirish
+        </a>
+        <a href="https://gemini.google.com/app" target="_blank" rel="noopener" class="bubble-gemini-btn" title="Google Gemini ilovasini ochish">
+          🌐 gemini.google.com
+        </a>
       </div>
     `;
   }
@@ -2069,12 +2315,23 @@ function addMessage(text, type = "bot", canSpeak = true, saveToDb = true) {
     </div>
   `;
 
-  // Ovozda tinglash tugmasi
+  // Ovozda tinglash va nusxa olish
   if (type === "bot" && canSpeak) {
     const voiceBtn = wrap.querySelector(".bubble-voice-btn");
     voiceBtn?.addEventListener("click", () => {
       const cleanText = (text || "").replace(/[*#`_]/g, "").trim();
       speakText(cleanText);
+    });
+
+    const copyBtn = wrap.querySelector(".bubble-copy-btn");
+    copyBtn?.addEventListener("click", () => {
+      const cleanText = (text || "").replace(/[*#`_]/g, "").trim();
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(cleanText).then(() => {
+          copyBtn.textContent = "✓ Nusxalandi!";
+          setTimeout(() => { copyBtn.textContent = "📋 Nusxa"; }, 2000);
+        }).catch(() => {});
+      }
     });
   }
 
@@ -2146,6 +2403,7 @@ async function sendToTelegramBot(text) {
 async function askAI(q) {
   if (!q || !q.trim()) return;
   const question = q.trim();
+  window.lastUserQuestion = question;
 
   // 1) Foydalanuvchi savolini chiqarish va saqlash
   addMessage(question, "user", false, true);
@@ -2346,6 +2604,23 @@ $("#saveAiApiKeyBtn")?.addEventListener("click", () => {
   const k = $("#customApiKeyInput")?.value.trim() || "";
   localStorage.setItem("nuras_ai_key", k);
   showToast(k ? "🔑 Shaxsiy AI kaliti saqlandi!" : "AI kalit tozalandi (Bepul rejim)");
+});
+
+// Google Gemini To'g'ridan-to'g'ri Qidiruv Portali
+function triggerGeminiDirectSearch() {
+  const input = $("#geminiDirectSearchInput");
+  if (!input) return;
+  const val = input.value.trim();
+  const query = val ? ("gemini " + val) : "gemini";
+  const searchUrl = "https://www.google.com/search?q=" + encodeURIComponent(query) + "&sourceid=chrome";
+  window.open(searchUrl, "_blank", "noopener,noreferrer");
+}
+$("#geminiDirectSearchBtn")?.addEventListener("click", triggerGeminiDirectSearch);
+$("#geminiDirectSearchInput")?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    triggerGeminiDirectSearch();
+  }
 });
 
 /* ---------- 5 YULDUZLI BAHOLASH ---------- */

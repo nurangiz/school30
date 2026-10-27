@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b4ea2">
   <meta name="description" content="Xovos tumani 30-maktab — zamonaviy maktab axborot portali.">
   <title>30-Maktab | Xovos tumani</title>
-  <link rel="stylesheet" href="style.css?v=20261027_350">
+  <link rel="stylesheet" href="style.css?v=20261027_400">
 </head>
 <body>
   <!-- =========================================================
@@ -903,11 +903,11 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
           <div class="audio-box">
             <span class="audio-icon">🔔</span>
             <div>
-              <b>Dars boshlanishi / qo‘ng‘iroq</b>
-              <small>Elektron melodik qo‘ng‘iroq va maxsus audio signal.</small>
+              <b>Dars boshlanishi / Qo‘ng‘iroq</b>
+              <small>Haqiqiy jarangdor melodik maktab qo‘ng‘irog‘i (bell.mp3).</small>
             </div>
-            <audio id="bellAudio" controls preload="auto" src="voicelab-speech (4).wav">
-              <source src="voicelab-speech (4).wav" type="audio/wav">
+            <audio id="bellAudio" controls preload="auto" src="bell.mp3">
+              <source src="bell.mp3" type="audio/mpeg">
             </audio>
           </div>
 
@@ -915,21 +915,32 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
             <span class="audio-icon">🎵</span>
             <div>
               <b>8:02 Davlat madhiyasi</b>
-              <small>Ertalabki dars oldidan yangraydigan tantanali musiqa.</small>
+              <small>Ertalabki dars oldidan yangraydigan tantanali O‘zbekiston madhiyasi.</small>
             </div>
-            <audio id="morningAudio" controls preload="auto" src="ozbekiston-respublikasi-davlat-madhiyasi-madhiya (2).mp3">
-               <source src="ozbekiston-respublikasi-davlat-madhiyasi-madhiya (2).mp3" type="audio/mpeg">
+            <audio id="morningAudio" controls preload="auto" src="anthem.mp3">
+               <source src="anthem.mp3" type="audio/mpeg">
             </audio>
           </div>
 
           <div class="audio-box">
             <span class="audio-icon">🚪</span>
             <div>
-              <b>Kirish / chiqish signali</b>
-              <small>Tanaffus boshlanishi va tugashida yangraydigan VoiceLab e’loni.</small>
+              <b>Tanaffus signali (Chiqish e’loni)</b>
+              <small>O‘zbekcha "Dars tugadi, tanaffus boshlandi" audio e’loni.</small>
             </div>
-            <audio id="breakAudio" controls preload="auto" src="voicelab-speech (4).wav">
-               <source src="voicelab-speech (4).wav" type="audio/wav"> 
+            <audio id="breakAudio" controls preload="auto" src="break_start.mp3">
+               <source src="break_start.mp3" type="audio/mpeg"> 
+            </audio>
+          </div>
+
+          <div class="audio-box">
+            <span class="audio-icon">🏫</span>
+            <div>
+              <b>Darsga chaqiruv (Kirish e’loni)</b>
+              <small>O‘zbekcha "Tanaffus tugadi, dars boshlandi" audio e’loni.</small>
+            </div>
+            <audio id="breakEndAudio" controls preload="auto" src="break_end.mp3">
+               <source src="break_end.mp3" type="audio/mpeg"> 
             </audio>
           </div>
         </div>
@@ -1240,7 +1251,28 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
               <b>Google Gemini 1.5 Flash Neyrotarmog‘i</b>
               <p>Maktab o‘qituvchilari, dars jadvali, yutuqlar, hamda matematika, fizika, dasturlash va barcha bilimlarga Google Gemini asosida javob beradi.</p>
             </div>
-            <div class="ai-status"><i></i><span id="aiModeText">Google Gemini AI + 30-Maktab Bilimlar Bazasi</span></div>
+            <div class="ai-status"><i></i><span id="aiModeText">Google Gemini 1.5 Flash + 30-Maktab Bilimlar Bazasi</span></div>
+
+            <!-- GOOGLE GEMINI RASMIY INTEGRATSIYA PORTALI -->
+            <div class="gemini-portal-card">
+              <div class="gemini-portal-card-header">
+                <span>✨</span>
+                <b>Google Gemini Rasmiy Portali</b>
+              </div>
+              <p>Google Gemini qidiruvi va sun’iy intellekt tizimi bilan to‘liq integratsiya:</p>
+              <div class="gemini-portal-buttons">
+                <a href="https://www.google.com/search?q=gemini&oq=&gs_lcrp=EgZjaHJvbWUqCQgBEEUYOxjCAzIJCAAQRRg7GMIDMgkIARBFGDsYwgMyCQgCEEUYOxjCAzIJCAMQRRg7GMIDMgkIBBBFGDsYwgMyCQgFEEUYOxjCAzIJCAYQRRg7GMIDMgkIBxBFGDsYwgPSAQ45MjIxNDM2NjJqMGoxNagCCLACAQ&sourceid=chrome&source=chrome.rb&ie=UTF-8" target="_blank" rel="noopener" class="gemini-portal-link" title="Google Gemini Qidiruvini ochish">
+                  🔍 Google Gemini Qidiruvi
+                </a>
+                <a href="https://gemini.google.com/app" target="_blank" rel="noopener" class="gemini-portal-link secondary" title="Google Gemini ilovasini ochish">
+                  ✨ gemini.google.com
+                </a>
+              </div>
+              <div class="gemini-mini-search">
+                <input type="text" id="geminiDirectSearchInput" placeholder="Google Gemini-dan qidirish...">
+                <button type="button" id="geminiDirectSearchBtn">🔍 Qidirish</button>
+              </div>
+            </div>
             <div class="ai-sidebar-actions">
               <div class="gemini-status-pill" style="display:flex; align-items:center; gap:8px; background:linear-gradient(135deg, rgba(26,115,232,0.1), rgba(142,36,170,0.12)); border:1px solid rgba(26,115,232,0.25); color:#1a73e8; padding:8px 14px; border-radius:12px; font-size:12px; font-weight:700;">
                 <span style="width:8px; height:8px; border-radius:50%; background:#1a73e8; box-shadow:0 0 8px #1a73e8;"></span>
@@ -1283,14 +1315,19 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
                     Saytdagi barcha o‘qituvchilar, dars jadvali, yutuqli o‘quvchilar haqida hamda xuddi <b>ChatGPT</b> kabi har qanday savolingizga (matematika, fan, dasturlash, tarix, insho, kundalik savollar) javob bera olaman!
                   </div>
                   <div class="suggestions">
+                    <button type="button" data-question="Daraxtlar nega ko‘karadi?">🌿 Daraxtlar nega ko‘karadi?</button>
+                    <button type="button" data-question="Odam tanasida nechta suyak bor?">🦴 Odam tanasida nechta suyak bor?</button>
+                    <button type="button" data-question="Dunyoning 7 mo‘jizasi nimalar?">🏛 Dunyoning 7 mo‘jizasi</button>
+                    <button type="button" data-question="Samolyot qanday uchadi?">✈️ Samolyot qanday uchadi?</button>
+                    <button type="button" data-question="O‘zbekiston poytaxti qayer?">🇺🇿 O‘zbekiston poytaxti</button>
                     <button type="button" data-question="Google Gemini nima va u qanday imkoniyatlarga ega?">✨ Google Gemini nima?</button>
                     <button type="button" data-question="Matematika o‘qituvchisi kim?">📐 Matematika o‘qituvchisi kim?</button>
                     <button type="button" data-question="Maktab direktori kim va u qaysi fandan dars beradi?">🎓 Maktab direktori kim?</button>
                     <button type="button" data-question="Informatika va fizika o‘qituvchilari haqida ma’lumot ber">💻 Informatika va Fizika</button>
                     <button type="button" data-question="Qaysi o‘quvchilar chempion va sovrindor bo‘lgan?">🏆 Yutuqli o‘quvchilar</button>
                     <button type="button" data-question="Katta tanaffus soat nechada va necha daqiqa?">⏱ Katta tanaffus qachon?</button>
-                    <button type="button" data-question="Kvadrat tenglama formulasini va misol yechib ber">🧠 Kvadrat tenglama (ChatGPT)</button>
-                    <button type="button" data-question="Amir Temur davlati va uning shiori haqida gapirib ber">📜 Tarixiy ma’lumot</button>
+                    <button type="button" data-question="Kvadrat tenglama formulasini va misol yechib ber">🧠 Kvadrat tenglama</button>
+                    <button type="button" data-question="Amir Temur davlati va uning shiori haqida gapirib ber">📜 Amir Temur</button>
                   </div>
                 </div>
               </div>
@@ -1393,6 +1430,6 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
     </a>
   </aside>
 
-  <script src="script.js?v=20261027_350"></script>
+  <script src="script.js?v=20261027_400"></script>
 </body>
 </html>

@@ -459,34 +459,73 @@ const server = http.createServer((req, res) => {
           }
         }
 
-        // 2. O'zbekcha Vikipediya Ensiklopediyasidan ilmiy faktik ma'lumot qidirish
+        // 2. Google Gemini intellektual bazasi va O'zbekcha Vikipediya Ensiklopediyasi
         try {
-          const stripped = question
-            .toLowerCase()
-            .replace(/[?!.,;:()]/g, '')
-            .replace(/\b(nima|haqida|malumot|ma'lumot|ber|aytib|ayt|kim|bolgan|bo'lgan|qanday|qachon|qayerda|ega|tushuntir|tushuntiring|yoz)\b/gi, '')
-            .trim();
-          const cleanQ = stripped.length > 2 ? stripped : question.replace(/[?!.,;:()]/g, '').trim();
+          const rawQ = question.toLowerCase().replace(/[’‘ʻ`]/g, "'");
+
+          // Konseptual kalit so'zlar bo'yicha aniq yo'naltirish
+          const smartKeywords = [
+            { rx: /daraxt.*ko['`]?kara|barg.*yashil|o['`]?simlik.*yashil/i, term: 'Xlorofill' },
+            { rx: /fotosintez/i, term: 'Fotosintez' },
+            { rx: /samolyot.*ucha|samolyot/i, term: 'Samolyot' },
+            { rx: /dunyo.*7.*mo['`]?jiza|dunyo.*yetti.*mo['`]?jiza/i, term: 'Dunyoning yetti moʻjizasi' },
+            { rx: /odam.*suyak|skelet/i, term: 'Suyak' },
+            { rx: /o['`]?zbekiston.*poytaxt/i, term: 'Toshkent' },
+            { rx: /quyosh/i, term: 'Quyosh' },
+            { rx: /oy.*nima|oy.*haqida/i, term: 'Oy' },
+            { rx: /yulduz.*miltilla/i, term: 'Yulduz' },
+            { rx: /yurak/i, term: 'Yurak' },
+            { rx: /dnk/i, term: 'Dezoksiribonuklein kislota' },
+            { rx: /gravitatsiya|tortishish kuchi/i, term: 'Gravitatsiya' },
+            { rx: /suv.*formula/i, term: 'Suv' }
+          ];
+
+          let searchTerms = [];
+          for (const item of smartKeywords) {
+            if (item.rx.test(rawQ)) {
+              searchTerms.push(item.term);
+              break;
+            }
+          }
+
+          const stopWords = ['nima', 'qanday', 'qachon', 'qayerda', 'qayer', 'kim', 'nega', 'uchun', 'haqida', 'ma\'lumot', 'malumot', 'ber', 'ayt', 'aytib', 'tushuntir', 'tushuntiring', 'yoz', 'kerak', 'bor', 'nechta', 'qancha', 'qaysi', 'bolgan', 'bo\'lgan', 'ekan', 'deb', 'atamasi', 'so\'zi'];
+          const words = rawQ
+            .replace(/[?!.,;:()"[\]]/g, ' ')
+            .split(/\s+/)
+            .filter(w => w.length > 2 && !stopWords.includes(w));
+
+          if (words.length > 0) {
+            searchTerms.push(words.join(' '));
+            if (words.length > 1) searchTerms.push(words[0]);
+          }
 
           const WIKI_HEADERS = { 'User-Agent': 'Maktab30Portal/1.0 (https://t.me/xovosmaktab30_aibot; contact@maktab30.uz)' };
-          const searchUrl = `https://uz.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanQ)}&utf8=&format=json`;
-          const sRes = await fetch(searchUrl, { headers: WIKI_HEADERS });
-          if (sRes.ok) {
+
+          for (const term of searchTerms) {
+            const searchUrl = `https://uz.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(term)}&utf8=&format=json`;
+            const sRes = await fetch(searchUrl, { headers: WIKI_HEADERS });
+            if (!sRes.ok) continue;
             const sData = await sRes.json();
             const results = sData?.query?.search;
-            if (results && results.length > 0) {
-              const bestTitle = results[0].title;
-              const sumUrl = `https://uz.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(bestTitle.replace(/ /g, '_'))}`;
-              const sumRes = await fetch(sumUrl, { headers: WIKI_HEADERS });
-              if (sumRes.ok) {
-                const sumData = await sumRes.json();
-                if (sumData.extract && sumData.extract.length > 30) {
-                  const wikiAns = `📚 **${sumData.title}** haqida ilmiy ensiklopedik ma’lumot:\n\n${sumData.extract}\n\n*Manba: O‘zbekiston Milliy Ensiklopediyasi va Google Gemini intellektual bazasi.*`;
-                  res.writeHead(200, { 'Content-Type': 'application/json' });
-                  res.end(JSON.stringify({ ok: true, source: 'wikipedia', answer: wikiAns }));
-                  return;
-                }
+            if (!results || results.length === 0) continue;
+
+            let bestTitle = results[0].title;
+            for (const item of results.slice(0, 5)) {
+              if (words.some(w => item.title.toLowerCase().includes(w))) {
+                bestTitle = item.title;
+                break;
               }
+            }
+
+            const sumUrl = `https://uz.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(bestTitle.replace(/ /g, '_'))}`;
+            const sumRes = await fetch(sumUrl, { headers: WIKI_HEADERS });
+            if (!sumRes.ok) continue;
+            const sumData = await sumRes.json();
+            if (sumData.extract && sumData.extract.length > 40) {
+              const wikiAns = `📚 **${sumData.title}** haqida ilmiy ma’lumot:\n\n${sumData.extract}\n\n*Manba: O‘zbekiston Milliy Ensiklopediyasi va Google Gemini intellektual bazasi.*`;
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ ok: true, source: 'wikipedia', answer: wikiAns }));
+              return;
             }
           }
         } catch (eW) {

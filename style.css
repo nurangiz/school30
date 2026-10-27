@@ -2973,3 +2973,150 @@ body.dark-mode .chat-contact-bar input {
   border-color: #294864;
   color: #edf5ff;
 }
+
+/* ============================================================
+   GOOGLE GEMINI INTEGRATION STYLES
+   ============================================================ */
+.gemini-portal-card {
+  background: linear-gradient(135deg, rgba(26, 115, 232, 0.08), rgba(142, 36, 170, 0.08));
+  border: 1px solid rgba(26, 115, 232, 0.25);
+  border-radius: 14px;
+  padding: 12px;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gemini-portal-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #1a73e8;
+}
+
+.gemini-portal-card p {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.gemini-portal-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.gemini-portal-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #1a73e8;
+  color: #ffffff !important;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.gemini-portal-link:hover {
+  background: #1557b0;
+  transform: translateY(-1px);
+}
+
+.gemini-portal-link.secondary {
+  background: rgba(26, 115, 232, 0.12);
+  color: #1a73e8 !important;
+  border: 1px solid rgba(26, 115, 232, 0.3);
+}
+
+.gemini-portal-link.secondary:hover {
+  background: rgba(26, 115, 232, 0.2);
+}
+
+.gemini-mini-search {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.gemini-mini-search input {
+  flex: 1;
+  border: 1px solid #c5d9ed;
+  border-radius: 8px;
+  padding: 5px 8px;
+  font-size: 11px;
+  outline: none;
+}
+
+.gemini-mini-search button {
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 5px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.bubble-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.bubble-gemini-btn,
+.bubble-copy-btn {
+  background: rgba(26, 115, 232, 0.08);
+  border: 1px solid rgba(26, 115, 232, 0.2);
+  color: #1a73e8 !important;
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.bubble-gemini-btn:hover,
+.bubble-copy-btn:hover {
+  background: rgba(26, 115, 232, 0.16);
+  transform: translateY(-1px);
+}
+
+body.dark-mode .gemini-portal-card {
+  background: linear-gradient(135deg, rgba(26, 115, 232, 0.15), rgba(142, 36, 170, 0.15));
+  border-color: rgba(26, 115, 232, 0.35);
+}
+
+body.dark-mode .gemini-portal-card p {
+  color: #b0c4de;
+}
+
+body.dark-mode .gemini-mini-search input {
+  background: #0d213b;
+  border-color: #294864;
+  color: #edf5ff;
+}
+
+body.dark-mode .bubble-gemini-btn,
+body.dark-mode .bubble-copy-btn {
+  background: rgba(26, 115, 232, 0.2);
+  border-color: rgba(26, 115, 232, 0.4);
+  color: #8acbff !important;
+}
