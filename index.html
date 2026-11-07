@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b4ea2">
   <meta name="description" content="Xovos tumani 30-maktab — zamonaviy maktab axborot portali.">
   <title>30-Maktab | Xovos tumani</title>
-  <link rel="stylesheet" href="style.css?v=20261027_400">
+  <link rel="stylesheet" href="style.css?v=20261107_500">
 </head>
 <body>
   <!-- =========================================================
@@ -985,7 +985,10 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
                   ✍️ Matn yozib o‘qitish
                 </button>
               </div>
-              <audio id="givenVoiceAudio" preload="auto" src="voicelab-speech (4).wav"></audio>
+              <audio id="givenVoiceAudio" preload="auto" src="voicelab-speech.wav">
+                <source src="voicelab-speech.wav" type="audio/wav">
+                <source src="voicelab-speech%20(4).wav" type="audio/wav">
+              </audio>
             </div>
 
             <!-- Preset announcements -->
@@ -1374,7 +1377,14 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
           <h3>Foydalanuvchilar fikrlari</h3>
           <span id="reviewAverage">Hali baho yo‘q</span>
         </div>
-        <div class="reviews-list" id="reviewsList"></div>
+        <div class="reviews-section-bottom">
+          <div class="reviews-list" id="reviewsList"></div>
+          <div class="creator-watermark-holder">
+            <div class="creator-watermark" id="creatorWatermark" role="button" tabindex="0" title="Mualliflik belgisi" aria-label="Mualliflik belgisi">
+              <img src="creator-emblem.png" alt="Mualliflik belgisi" class="creator-watermark-img" loading="lazy">
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   </main>
@@ -1421,6 +1431,66 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
   <button id="toTop" class="to-top" aria-label="Tepaga chiqish">↑</button>
   <div id="toast" class="toast"></div>
 
+  <!-- SAYT YARATUVCHISI QIZIL EKRAN MODAL OYNASI -->
+  <div class="creator-modal-overlay" id="creatorModal" aria-hidden="true">
+    <div class="creator-modal-backdrop" id="creatorModalBackdrop"></div>
+    <div class="creator-modal-card" role="dialog" aria-modal="true" aria-labelledby="creatorModalTitle">
+      <button type="button" class="creator-modal-close" id="closeCreatorModalBtn" aria-label="Yopish">✕</button>
+      
+      <div class="creator-modal-glow"></div>
+      
+      <div class="creator-modal-header">
+        <div class="creator-badge-emblem">
+          <img src="creator-emblem.png" alt="Nurangiz Nurbek qizi ramzi" class="creator-modal-emblem-img">
+        </div>
+        <span class="creator-top-eyebrow">👑 SAYT YARATUVCHISI VA MUALLIFI</span>
+        <h2 class="creator-modal-name" id="creatorModalTitle">NURULLAYEVA NURANGIZ NURBEK QIZI</h2>
+        <p class="creator-modal-subtitle">Xovos tumani 30-maktab zamonaviy axborot-ta’lim portali hamda interaktiv tizimlari yaratuvchisi</p>
+      </div>
+
+      <div class="creator-modal-greeting">
+        <div class="greeting-icon">❤️</div>
+        <p><b>Biz bilan ishlaganingizdan xursandmiz!</b><br>Taklif, hamkorlik va yangi loyihalar uchun doimo ochiqmiz.</p>
+      </div>
+
+      <div class="creator-modal-contacts">
+        <div class="contacts-title">📞 Murojaat uchun:</div>
+        <div class="contacts-grid">
+          <a href="tel:+998955682010" class="creator-contact-item" title="Qo'ng'iroq qilish">
+            <span class="contact-icon">📱</span>
+            <div class="contact-details">
+              <small>Telefon raqam:</small>
+              <b>+998 95 568 20 10</b>
+            </div>
+            <span class="contact-action">Qo‘ng‘iroq ➤</span>
+          </a>
+
+          <a href="https://t.me/nur080910" target="_blank" rel="noopener noreferrer" class="creator-contact-item tg-item" title="Telegramda yozish">
+            <span class="contact-icon">✈️</span>
+            <div class="contact-details">
+              <small>Telegram profil:</small>
+              <b>@nur080910</b>
+            </div>
+            <span class="contact-action">Yozish ➤</span>
+          </a>
+
+          <a href="https://instagram.com/nurullayeva_nurangiz" target="_blank" rel="noopener noreferrer" class="creator-contact-item insta-item" title="Instagramda kuzatish">
+            <span class="contact-icon">📸</span>
+            <div class="contact-details">
+              <small>Instagram sahifa:</small>
+              <b>@nurullayeva_nurangiz</b>
+            </div>
+            <span class="contact-action">Ochish ➤</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="creator-modal-footer">
+        <span>© 2026 NURAS Portfolio · 30-Maktab Portali</span>
+      </div>
+    </div>
+  </div>
+
   <!-- FLOATING TELEGRAM BOT WIDGET -->
   <aside class="tg-float-widget" id="tgFloatWidget">
     <a href="https://t.me/xovosmaktab30_aibot" target="_blank" rel="noopener" class="tg-float-btn" title="30-Maktab Telegram Boti: @xovosmaktab30_aibot">
@@ -1430,6 +1500,6 @@ O`zbekiston Respublikasi 3-o`rin Central Asia chempionati 3-o`rin</p>
     </a>
   </aside>
 
-  <script src="script.js?v=20261027_400"></script>
+  <script src="script.js?v=20261107_500"></script>
 </body>
 </html>

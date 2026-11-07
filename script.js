@@ -90,6 +90,15 @@ const schedule = [
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
 
+// Vercel serverless hamda mahalliy backend ulanishi
+function getApiEndpoint(path) {
+  const isLocal = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+  if (isLocal && window.location.port && window.location.port !== "3001") {
+    return "http://localhost:3001" + path;
+  }
+  return path;
+}
+
 function normalize(str) {
   if (!str) return "";
   return String(str)
@@ -620,7 +629,7 @@ $$(".provider-tab").forEach(tab => {
 // SIZ BERGAN AI OVOZINI TINGLASH TUGMASI (voicelab-speech (4).wav)
 $("#playGivenVoiceBtn")?.addEventListener("click", () => {
   stopAllSounds();
-  const audio = $("#givenVoiceAudio") || new Audio("voicelab-speech (4).wav");
+  const audio = $("#givenVoiceAudio") || new Audio("voicelab-speech.wav");
   currentVoiceAudio = audio;
   setVoiceWaveActive(true, "Siz bergan ElevenLabs VoiceLab AI ovozi yangramoqda...");
   audio.currentTime = 0;
@@ -765,7 +774,8 @@ async function speakWithElevenLabs(rawText, speed = 1.0) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 6000);
 
-    const bridgeRes = await fetch("http://localhost:3001/api/tts", {
+    const ttsEndpoint = getApiEndpoint("/api/tts");
+    const bridgeRes = await fetch(ttsEndpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       signal: controller.signal,
@@ -780,24 +790,27 @@ async function speakWithElevenLabs(rawText, speed = 1.0) {
     clearTimeout(timeoutId);
 
     if (bridgeRes.ok) {
-      const blob = await bridgeRes.blob();
-      if (blob.size > 200) {
-        const audioUrl = URL.createObjectURL(blob);
-        if (currentVoiceAudio) {
-          currentVoiceAudio.pause();
-          currentVoiceAudio = null;
+      const contentType = bridgeRes.headers.get("content-type") || "";
+      if (contentType.includes("audio")) {
+        const blob = await bridgeRes.blob();
+        if (blob.size > 200) {
+          const audioUrl = URL.createObjectURL(blob);
+          if (currentVoiceAudio) {
+            currentVoiceAudio.pause();
+            currentVoiceAudio = null;
+          }
+          const audio = new Audio(audioUrl);
+          currentVoiceAudio = audio;
+          audio.playbackRate = parseFloat(speed) || 1.0;
+          setVoiceWaveActive(true, isElevenVoice ? "ElevenLabs Voice-Lab ovozi yangramoqda..." : "O‘zbekcha tabiiy neyro-ovozda o‘qilmoqda...");
+          audio.onended = () => {
+            setVoiceWaveActive(false);
+            URL.revokeObjectURL(audioUrl);
+          };
+          audio.onerror = () => speakViaWebSpeech(rawText, speed, voiceId);
+          await audio.play();
+          return;
         }
-        const audio = new Audio(audioUrl);
-        currentVoiceAudio = audio;
-        audio.playbackRate = parseFloat(speed) || 1.0;
-        setVoiceWaveActive(true, isElevenVoice ? "ElevenLabs Voice-Lab ovozi yangramoqda..." : "O‘zbekcha go‘zal ovozda o‘qilmoqda...");
-        audio.onended = () => {
-          setVoiceWaveActive(false);
-          URL.revokeObjectURL(audioUrl);
-        };
-        audio.onerror = () => speakViaWebSpeech(rawText, speed, voiceId);
-        await audio.play();
-        return;
       }
     }
   } catch (err) {
@@ -883,7 +896,7 @@ async function speakText(text) {
   // 1) Agar provayder "givenvoice" bo'lsa va matn qisqa yoki bo'sh bo'lsa, namunani yangratish
   if (currentVoiceProvider === "givenvoice" && (rawText.length < 5 || rawText.includes("namuna"))) {
     stopAllSounds();
-    const audio = $("#givenVoiceAudio") || new Audio("voicelab-speech (4).wav");
+    const audio = $("#givenVoiceAudio") || new Audio("voicelab-speech.wav");
     currentVoiceAudio = audio;
     setVoiceWaveActive(true, "Siz bergan ElevenLabs VoiceLab AI namunasi yangramoqda...");
     audio.currentTime = 0;
@@ -2145,7 +2158,8 @@ async function queryOnlineAI(question, siteData) {
   try {
     const srvCtrl = new AbortController();
     const srvTimer = setTimeout(() => srvCtrl.abort(), 5000);
-    const srvRes = await fetch("http://localhost:3001/api/ai", {
+    const aiEndpoint = getApiEndpoint("/api/ai");
+    const srvRes = await fetch(aiEndpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       signal: srvCtrl.signal,
@@ -2374,20 +2388,25 @@ const TELEGRAM_BOT_CONFIG = {
 
 // Saytdan Telegram Botga to'g'ridan-to'g'ri xabar yuborish funksiyasi
 async function sendToTelegramBot(text) {
+  if (!text) return;
   try {
-    // 1) Brauzerdan to'g'ridan-to'g'ri Telegram API ga yuborish (server bo'lmasa ham 100% ishlaydi)
-    fetch(`${TELEGRAM_BOT_CONFIG.apiUrl}/sendMessage`, {
+    const BOT_TOKEN = "8720811902:AAH-cWg0o77k9B6OrRwAVhlkJ0C9Wgv626w";
+    const ADMIN_ID = "6125589125";
+
+    // 1) Brauzerdan to'g'ridan-to'g'ri Telegram API ga yuborish (Vercelda ishonchli ishlaydi)
+    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        chat_id: TELEGRAM_BOT_CONFIG.chatId,
+        chat_id: ADMIN_ID,
         text: text,
         parse_mode: "Markdown"
       })
-    }).catch(e => console.warn("TG Direct fetch ogohlantirish:", e));
+    }).catch(e => console.warn("Telegram direct yuborish:", e));
 
-    // 2) Lokal server (telegram_bot.js) ga ham yuborish
-    fetch("http://localhost:3001/api/send_bot", {
+    // 2) Serverless / Lokal backend (/api/send_bot)
+    const botEndpoint = getApiEndpoint("/api/send_bot");
+    fetch(botEndpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -2468,7 +2487,12 @@ async function askAI(q) {
 
   // 5) Tezkor bilimlar bazasidan tekshirish (0ms instant javob)
   const fastUniversal = universalChatGPTEngine(question);
-  const isGeneric = fastUniversal && fastUniversal.includes("Google Gemini & NURAS AI Tahlili");
+  const isGeneric = fastUniversal && (
+    fastUniversal.includes("Yo‘nalish: *(") ||
+    fastUniversal.includes("Google Gemini &") ||
+    fastUniversal.includes("NURAS AI Tahlili") ||
+    fastUniversal.includes("✨ **Gemini-da qidirish**")
+  );
   const customKey = localStorage.getItem("nuras_ai_key") || AI_CONFIG.apiKey || "";
 
   // Agar aniq faktik/ilmiy javob mavjud bo'lsa va maxsus API kalit kiritilmagan bo'lsa, qotmasdan darhol javob beramiz!
@@ -2751,3 +2775,53 @@ try {
     if ($("#tgDirectContact")) $("#tgDirectContact").value = savedContact;
   }
 } catch (e) {}
+
+
+/* ============================================================
+   SAYT YARATUVCHISI QIZIL MODAL EKRANI
+   ============================================================ */
+function initCreatorModal() {
+  const watermark = document.getElementById("creatorWatermark");
+  const modal = document.getElementById("creatorModal");
+  const closeBtn = document.getElementById("closeCreatorModalBtn");
+  const backdrop = document.getElementById("creatorModalBackdrop");
+
+  if (!modal) return;
+
+  function openCreatorModal() {
+    modal.classList.add("active");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeCreatorModal() {
+    modal.classList.remove("active");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+  }
+
+  if (watermark) {
+    watermark.addEventListener("click", openCreatorModal);
+    watermark.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        openCreatorModal();
+      }
+    });
+  }
+
+  if (closeBtn) closeBtn.addEventListener("click", closeCreatorModal);
+  if (backdrop) backdrop.addEventListener("click", closeCreatorModal);
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal.classList.contains("active")) {
+      closeCreatorModal();
+    }
+  });
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initCreatorModal);
+} else {
+  initCreatorModal();
+}
